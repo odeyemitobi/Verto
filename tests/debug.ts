@@ -1,4 +1,4 @@
-import { initSimnet } from "@hirosystems/clarinet-sdk";
+import { initSimnet } from "@stacks/clarinet-sdk";
 import { Cl, cvToString } from "@stacks/transactions";
 
 const simnet = await initSimnet();

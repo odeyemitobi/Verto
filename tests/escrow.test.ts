@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { initSimnet } from "@hirosystems/clarinet-sdk";
+import { initSimnet } from "@stacks/clarinet-sdk";
 import { Cl, ClarityType } from "@stacks/transactions";
 
 // Initialize simnet
