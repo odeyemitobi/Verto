@@ -1,17 +1,26 @@
 {
   "name": "verto",
   "version": "1.0.0",
+  "type": "module",
   "description": "Privacy-first Bitcoin invoicing platform with trustless escrow",
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
     "test:report": "vitest run -- --coverage --costs",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "fuzz:test": "npx rv . escrow-logic test --runs=200",
+    "fuzz:invariant": "npx rv . escrow-logic invariant --runs=200",
+    "fuzz:all": "npx rv . escrow-logic test --runs=200 && npx rv . escrow-logic invariant --runs=200"
   },
   "devDependencies": {
     "@stacks/clarinet-sdk": "^3.13.1",
     "@stacks/transactions": "^7.3.1",
+    "@vitest/coverage-v8": "^1.6.1",
     "typescript": "^5.0.0",
-    "vitest": "^1.0.0"
+    "vitest": "^1.0.0",
+    "vitest-environment-clarinet": "^3.0.2"
+  },
+  "dependencies": {
+    "@stacks/rendezvous": "^0.13.1"
   }
 }

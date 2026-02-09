@@ -1,9 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { initSimnet } from "@stacks/clarinet-sdk";
 import { Cl, ClarityType } from "@stacks/transactions";
 
-// Initialize simnet
-const simnet = await initSimnet();
+// simnet is provided as a global by vitest-environment-clarinet
 
 // Contract identifiers
 const STORAGE_CONTRACT = "escrow-storage";

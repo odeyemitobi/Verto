@@ -1,8 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { initSimnet } from "@stacks/clarinet-sdk";
 import { Cl, cvToString } from "@stacks/transactions";
 
-const simnet = await initSimnet();
+// simnet is provided as a global by vitest-environment-clarinet
 const deployer = simnet.deployer;
 const accounts = simnet.getAccounts();
 const wallet1 = accounts.get("wallet_1")!;
