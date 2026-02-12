@@ -8,6 +8,7 @@ import {
   RiUserAddLine,
   RiSettings3Line,
   RiWallet3Line,
+  RiCalendarLine,
 } from 'react-icons/ri';
 import StatsGrid from '@/components/dashboard/StatsGrid';
 import RecentInvoices from '@/components/dashboard/RecentInvoices';
@@ -18,11 +19,29 @@ import { formatCurrency, formatDate, truncateAddress } from '@/lib/utils';
 import { useEscrowStore } from '@/stores/useEscrowStore';
 import { useWalletStore } from '@/stores/useWalletStore';
 import { useInvoiceStore } from '@/stores/useInvoiceStore';
+import { useSettingsStore } from '@/stores/useSettingsStore';
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
+function getFormattedDate(): string {
+  return new Date().toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  });
+}
 
 export default function DashboardPage() {
   const { escrows } = useEscrowStore();
   const { address } = useWalletStore();
   const { invoices } = useInvoiceStore();
+  const { settings } = useSettingsStore();
+  const displayName = settings.businessName || 'stacker';
 
   const activeEscrows = escrows
     .filter((e) => e.status !== 'completed')
@@ -41,7 +60,22 @@ export default function DashboardPage() {
 
         <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl dark:text-white">
+            {/* Mobile: Overview first, then greeting */}
+            <div className="mb-1 flex flex-col gap-0.5 lg:hidden">
+              <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+                Overview
+              </h1>
+              <span className="text-base font-medium text-gray-600 dark:text-gray-400">
+                {getGreeting()}, {displayName}
+              </span>
+              <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
+                <RiCalendarLine className="h-3 w-3" />
+                {getFormattedDate()}
+              </span>
+            </div>
+
+            {/* Desktop heading */}
+            <h1 className="hidden text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl dark:text-white lg:block">
               Overview
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -72,7 +106,7 @@ export default function DashboardPage() {
           {/* Quick action */}
           <Link
             href="/invoices/new"
-            className="inline-flex h-11 shrink-0 items-center gap-2 rounded-xl bg-orange-500 px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/20 transition-all hover:bg-orange-600 hover:shadow-xl hover:shadow-orange-500/30"
+            className="inline-flex h-11 shrink-0 self-end items-center gap-2 rounded-xl bg-orange-500 px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/20 transition-all hover:bg-orange-600 hover:shadow-xl hover:shadow-orange-500/30 sm:self-auto"
           >
             <RiAddLine className="h-4 w-4" />
             New Invoice
