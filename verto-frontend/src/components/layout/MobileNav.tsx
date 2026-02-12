@@ -16,7 +16,7 @@ interface MobileNavProps {
 
 export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
   const pathname = usePathname();
-  const { isConnected, address, connect, disconnect } = useWalletStore();
+  const { isConnected, address, isConnecting, connect, disconnect } = useWalletStore();
 
   // Close on route change
   useEffect(() => {
@@ -111,10 +111,11 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
           ) : (
             <button
               onClick={connect}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-orange-600"
+              disabled={isConnecting}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-orange-600 disabled:opacity-60"
             >
               <RiWallet3Line className="h-4 w-4" />
-              Connect Wallet
+              {isConnecting ? 'Connecting...' : 'Connect Wallet'}
             </button>
           )}
         </div>

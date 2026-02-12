@@ -12,7 +12,7 @@ interface HeaderProps {
 }
 
 export default function Header({ onMenuClick, title }: HeaderProps) {
-  const { isConnected, address, connect } = useWalletStore();
+  const { isConnected, address, isConnecting, connect } = useWalletStore();
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-gray-200 bg-white/80 px-4 backdrop-blur-xl dark:border-neutral-800 dark:bg-black/80 lg:px-6">
@@ -56,10 +56,11 @@ export default function Header({ onMenuClick, title }: HeaderProps) {
         ) : (
           <button
             onClick={connect}
-            className="hidden items-center gap-1.5 rounded-lg bg-orange-500 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-orange-600 sm:flex lg:hidden"
+            disabled={isConnecting}
+            className="hidden items-center gap-1.5 rounded-lg bg-orange-500 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-orange-600 disabled:opacity-60 sm:flex lg:hidden"
           >
             <RiWallet3Line className="h-3.5 w-3.5" />
-            Connect
+            {isConnecting ? 'Connecting...' : 'Connect'}
           </button>
         )}
       </div>

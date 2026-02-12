@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { RiMenuLine, RiCloseLine, RiWallet3Line } from 'react-icons/ri';
-import { cn } from '@/lib/utils';
+import { RiMenuLine, RiCloseLine, RiWallet3Line, RiLoader4Line } from 'react-icons/ri';
+import { cn, truncateAddress } from '@/lib/utils';
 import ThemeToggle from '@/components/theme/ThemeToggle';
 import { useWalletStore } from '@/stores/useWalletStore';
 
@@ -16,7 +16,7 @@ const LINKS = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { isConnected, connect } = useWalletStore();
+  const { isConnected, address, isConnecting, connect } = useWalletStore();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -59,20 +59,25 @@ export default function Navbar() {
         <div className="flex items-center gap-3">
           <ThemeToggle />
 
-          {isConnected ? (
-            <Link
-              href="/dashboard"
-              className="hidden rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-600 sm:block"
-            >
-              Open App
-            </Link>
+          {isConnected && address ? (
+            <div className="hidden items-center gap-2 rounded-lg border border-gray-200 px-3 py-1.5 sm:flex dark:border-neutral-700">
+              <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                {truncateAddress(address, 4)}
+              </span>
+            </div>
           ) : (
             <button
               onClick={connect}
-              className="hidden items-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-600 sm:flex"
+              disabled={isConnecting}
+              className="hidden items-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-600 disabled:opacity-60 sm:flex"
             >
-              <RiWallet3Line className="h-4 w-4" />
-              Connect Wallet
+              {isConnecting ? (
+                <RiLoader4Line className="h-4 w-4 animate-spin" />
+              ) : (
+                <RiWallet3Line className="h-4 w-4" />
+              )}
+              {isConnecting ? 'Connecting...' : 'Connect Wallet'}
             </button>
           )}
 
@@ -104,20 +109,25 @@ export default function Navbar() {
             </a>
           ))}
           <div className="mt-2 border-t border-gray-100 pt-2 dark:border-neutral-800">
-            {isConnected ? (
-              <Link
-                href="/dashboard"
-                className="block rounded-lg bg-orange-500 px-3 py-2.5 text-center text-sm font-medium text-white"
-              >
-                Open App
-              </Link>
+            {isConnected && address ? (
+              <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 dark:bg-neutral-900">
+                <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                  {truncateAddress(address, 6)}
+                </span>
+              </div>
             ) : (
               <button
                 onClick={connect}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-3 py-2.5 text-sm font-medium text-white"
+                disabled={isConnecting}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-3 py-2.5 text-sm font-medium text-white disabled:opacity-60"
               >
-                <RiWallet3Line className="h-4 w-4" />
-                Connect Wallet
+                {isConnecting ? (
+                  <RiLoader4Line className="h-4 w-4 animate-spin" />
+                ) : (
+                  <RiWallet3Line className="h-4 w-4" />
+                )}
+                {isConnecting ? 'Connecting...' : 'Connect Wallet'}
               </button>
             )}
           </div>

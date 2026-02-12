@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { RiWallet3Line, RiArrowRightLine } from 'react-icons/ri';
+import { RiWallet3Line, RiArrowRightLine, RiLoader4Line } from 'react-icons/ri';
 import { useWalletStore } from '@/stores/useWalletStore';
 
 export default function Hero() {
-  const { isConnected, connect } = useWalletStore();
+  const { isConnected, isConnecting, connect } = useWalletStore();
 
   return (
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 pt-16">
@@ -54,10 +54,15 @@ export default function Hero() {
           ) : (
             <button
               onClick={connect}
-              className="inline-flex h-12 items-center gap-2 rounded-xl bg-orange-500 px-8 text-base font-semibold text-white shadow-lg shadow-orange-500/25 transition-all hover:bg-orange-600 hover:shadow-xl hover:shadow-orange-500/30"
+              disabled={isConnecting}
+              className="inline-flex h-12 items-center gap-2 rounded-xl bg-orange-500 px-8 text-base font-semibold text-white shadow-lg shadow-orange-500/25 transition-all hover:bg-orange-600 hover:shadow-xl hover:shadow-orange-500/30 disabled:opacity-60"
             >
-              <RiWallet3Line className="h-5 w-5" />
-              Connect Wallet
+              {isConnecting ? (
+                <RiLoader4Line className="h-5 w-5 animate-spin" />
+              ) : (
+                <RiWallet3Line className="h-5 w-5" />
+              )}
+              {isConnecting ? 'Connecting...' : 'Connect Wallet'}
             </button>
           )}
           <a

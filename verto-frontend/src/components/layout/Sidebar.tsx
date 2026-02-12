@@ -26,7 +26,7 @@ export { NAV_ITEMS };
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { isConnected, address, connect, disconnect } = useWalletStore();
+  const { isConnected, address, isConnecting, connect, disconnect } = useWalletStore();
 
   return (
     <aside className="hidden lg:fixed lg:inset-y-0 lg:z-40 lg:flex lg:w-64 lg:flex-col">
@@ -85,10 +85,11 @@ export default function Sidebar() {
           ) : (
             <button
               onClick={connect}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-orange-600"
+              disabled={isConnecting}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-orange-600 disabled:opacity-60"
             >
               <RiWallet3Line className="h-4 w-4" />
-              Connect Wallet
+              {isConnecting ? 'Connecting...' : 'Connect Wallet'}
             </button>
           )}
         </div>
