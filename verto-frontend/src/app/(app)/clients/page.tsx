@@ -16,6 +16,7 @@ import Modal from '@/components/ui/Modal';
 import EmptyState from '@/components/ui/EmptyState';
 import PageHeader from '@/components/layout/PageHeader';
 import ClientForm from '@/components/clients/ClientForm';
+import { toast } from 'sonner';
 import { formatDate } from '@/lib/utils';
 import { useClientStore } from '@/stores/useClientStore';
 import { useInvoiceStore } from '@/stores/useInvoiceStore';
@@ -115,7 +116,10 @@ export default function ClientsPage() {
                   </div>
                 </div>
                 <button
-                  onClick={() => deleteClient(client.id)}
+                  onClick={() => {
+                    deleteClient(client.id);
+                    toast.success('Client deleted');
+                  }}
                   aria-label="Delete client"
                   className="ml-2 rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10"
                 >

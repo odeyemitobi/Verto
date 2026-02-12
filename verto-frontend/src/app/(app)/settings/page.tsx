@@ -1,9 +1,11 @@
 'use client';
 
+import { useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { RiSaveLine } from 'react-icons/ri';
+import { RiSaveLine, RiUploadLine, RiCloseLine } from 'react-icons/ri';
+import { toast } from 'sonner';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
@@ -28,6 +30,7 @@ export default function SettingsPage() {
   const { settings, updateSettings } = useSettingsStore();
   const { isConnected, address, network, setNetwork, disconnect } =
     useWalletStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -40,6 +43,7 @@ export default function SettingsPage() {
 
   const onSubmit = (data: SettingsFormData) => {
     updateSettings(data);
+    toast.success('Settings saved');
   };
 
   return (
@@ -56,6 +60,70 @@ export default function SettingsPage() {
           Business Details
         </h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Logo Upload */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Business Logo
+            </label>
+            <div className="flex items-center gap-4">
+              {settings.logo ? (
+                <div className="relative">
+                  <img
+                    src={settings.logo}
+                    alt="Business logo"
+                    className="h-16 w-16 rounded-lg border border-gray-200 object-contain dark:border-neutral-700"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateSettings({ logo: undefined });
+                      toast.success('Logo removed');
+                    }}
+                    className="absolute -right-1.5 -top-1.5 rounded-full bg-red-500 p-0.5 text-white shadow hover:bg-red-600"
+                  >
+                    <RiCloseLine className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex h-16 w-16 items-center justify-center rounded-lg border-2 border-dashed border-gray-200 dark:border-neutral-700">
+                  <RiUploadLine className="h-5 w-5 text-gray-400" />
+                </div>
+              )}
+              <div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  icon={<RiUploadLine className="h-3.5 w-3.5" />}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  Upload Logo
+                </Button>
+                <p className="mt-1 text-xs text-gray-400">PNG, JPG up to 500KB</p>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (file.size > 512_000) {
+                    toast.error('File too large', { description: 'Max 500KB' });
+                    return;
+                  }
+                  const reader = new FileReader();
+                  reader.onload = () => {
+                    updateSettings({ logo: reader.result as string });
+                    toast.success('Logo uploaded');
+                  };
+                  reader.readAsDataURL(file);
+                }}
+              />
+            </div>
+          </div>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <Input
               label="Business Name"

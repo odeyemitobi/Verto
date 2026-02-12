@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -15,6 +16,7 @@ import { useClientStore } from '@/stores/useClientStore';
 import { useInvoiceStore } from '@/stores/useInvoiceStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { generateId, generateInvoiceNumber } from '@/lib/utils';
+import { fetchBtcPrice, formatBtcAmount } from '@/lib/price';
 import type { Invoice } from '@/types';
 
 const lineItemSchema = z.object({
@@ -45,6 +47,12 @@ export default function InvoiceForm({ onSuccess, initialData }: InvoiceFormProps
   const { clients } = useClientStore();
   const { invoices } = useInvoiceStore();
   const { settings } = useSettingsStore();
+  const [btcPrice, setBtcPrice] = useState<number>(0);
+
+  // Fetch BTC price on mount
+  useEffect(() => {
+    fetchBtcPrice().then(setBtcPrice);
+  }, []);
 
   const clientOptions = clients.map((c) => ({
     value: c.id,
@@ -91,6 +99,8 @@ export default function InvoiceForm({ onSuccess, initialData }: InvoiceFormProps
     0,
   );
 
+  const totalBtc = btcPrice > 0 ? totalUsd / btcPrice : 0;
+
   const onSubmit = (data: InvoiceFormData) => {
     const client = clients.find((c) => c.id === data.clientId);
     const items = data.items.map((item) => ({
@@ -108,7 +118,7 @@ export default function InvoiceForm({ onSuccess, initialData }: InvoiceFormProps
       description: data.description,
       items,
       amountUsd: totalUsd,
-      amountBtc: 0, // TODO: Real conversion
+      amountBtc: totalBtc,
       paymentAddress: data.paymentAddress,
       status: 'pending',
       dueDate: data.dueDate,
@@ -238,9 +248,16 @@ export default function InvoiceForm({ onSuccess, initialData }: InvoiceFormProps
           <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
             Total
           </span>
-          <span className="text-xl font-bold text-gray-900 dark:text-white">
-            ${totalUsd.toFixed(2)}
-          </span>
+          <div className="text-right">
+            <span className="text-xl font-bold text-gray-900 dark:text-white">
+              ${totalUsd.toFixed(2)}
+            </span>
+            {totalBtc > 0 && (
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                ≈ {formatBtcAmount(totalBtc)} BTC
+              </p>
+            )}
+          </div>
         </div>
       </div>
 

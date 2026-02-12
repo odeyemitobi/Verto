@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { RiAddLine, RiShieldCheckLine } from 'react-icons/ri';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
@@ -11,6 +12,15 @@ import EscrowCard from '@/components/escrow/EscrowCard';
 import CreateEscrowForm from '@/components/escrow/CreateEscrowForm';
 import { useEscrowStore } from '@/stores/useEscrowStore';
 import { useWalletStore } from '@/stores/useWalletStore';
+import {
+  contractFundEscrow,
+  contractMarkDelivered,
+  contractReleasePayment,
+  contractInitiateDispute,
+  contractCancelEscrow,
+  contractRequestRevision,
+  getExplorerTxUrl,
+} from '@/lib/stacks';
 import type { Escrow, EscrowStatus } from '@/types';
 
 const STATUS_TABS: { label: string; value: EscrowStatus | 'all' }[] = [
@@ -20,6 +30,7 @@ const STATUS_TABS: { label: string; value: EscrowStatus | 'all' }[] = [
   { label: 'Delivered', value: 'delivered' },
   { label: 'Completed', value: 'completed' },
   { label: 'Disputed', value: 'disputed' },
+  { label: 'Cancelled', value: 'cancelled' },
 ];
 
 export default function EscrowPage() {
@@ -27,38 +38,110 @@ export default function EscrowPage() {
   const { isConnected } = useWalletStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<EscrowStatus | 'all'>('all');
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
   const filtered = escrows.filter(
     (e) => statusFilter === 'all' || e.status === statusFilter,
   );
 
-  const handleAction = (action: string, escrow: Escrow) => {
-    // TODO: Replace with real Stacks contract calls
-    switch (action) {
-      case 'fund':
-        updateEscrow(escrow.id, {
-          status: 'funded',
-          fundedAt: new Date().toISOString(),
-        });
-        break;
-      case 'deliver':
-        updateEscrow(escrow.id, {
-          status: 'delivered',
-          deliveredAt: new Date().toISOString(),
-          reviewDeadline: new Date(
-            Date.now() + 48 * 60 * 60 * 1000,
-          ).toISOString(),
-        });
-        break;
-      case 'release':
-        updateEscrow(escrow.id, {
-          status: 'completed',
-          completedAt: new Date().toISOString(),
-        });
-        break;
-      case 'dispute':
-        updateEscrow(escrow.id, { status: 'disputed' });
-        break;
+  const handleAction = async (action: string, escrow: Escrow) => {
+    setLoadingAction(`${action}-${escrow.id}`);
+    try {
+      let txId: string | null = null;
+
+      switch (action) {
+        case 'fund':
+          txId = await contractFundEscrow(escrow.escrowId);
+          if (txId) {
+            updateEscrow(escrow.id, {
+              status: 'funded',
+              fundedAt: new Date().toISOString(),
+              txId,
+            });
+            toast.success('Escrow funded!', {
+              description: 'Transaction submitted to the blockchain.',
+              action: {
+                label: 'View TX',
+                onClick: () => window.open(getExplorerTxUrl(txId!), '_blank'),
+              },
+            });
+          }
+          break;
+
+        case 'deliver':
+          txId = await contractMarkDelivered(escrow.escrowId);
+          if (txId) {
+            updateEscrow(escrow.id, {
+              status: 'delivered',
+              deliveredAt: new Date().toISOString(),
+              reviewDeadline: new Date(
+                Date.now() + 48 * 60 * 60 * 1000,
+              ).toISOString(),
+              txId,
+            });
+            toast.success('Work marked as delivered!', {
+              description: 'Client has 48 hours to review and release payment.',
+            });
+          }
+          break;
+
+        case 'release':
+          txId = await contractReleasePayment(escrow.escrowId);
+          if (txId) {
+            updateEscrow(escrow.id, {
+              status: 'completed',
+              completedAt: new Date().toISOString(),
+              txId,
+            });
+            toast.success('Payment released!', {
+              description: 'Funds have been sent to the freelancer.',
+            });
+          }
+          break;
+
+        case 'revision':
+          txId = await contractRequestRevision(escrow.escrowId);
+          if (txId) {
+            updateEscrow(escrow.id, {
+              status: 'funded',
+              deliveredAt: undefined,
+              reviewDeadline: undefined,
+              txId,
+            });
+            toast.info('Revision requested', {
+              description: 'Escrow reverted to funded status for redelivery.',
+            });
+          }
+          break;
+
+        case 'dispute':
+          txId = await contractInitiateDispute(escrow.escrowId);
+          if (txId) {
+            updateEscrow(escrow.id, { status: 'disputed', txId });
+            toast.warning('Dispute initiated', {
+              description: 'Funds are frozen pending resolution.',
+            });
+          }
+          break;
+
+        case 'cancel':
+          txId = await contractCancelEscrow(escrow.escrowId);
+          if (txId) {
+            updateEscrow(escrow.id, { status: 'cancelled', txId });
+            toast.info('Escrow cancelled');
+          }
+          break;
+      }
+
+      if (!txId && action !== 'cancel') {
+        toast.info('Transaction cancelled by user.');
+      }
+    } catch (error) {
+      toast.error('Transaction failed', {
+        description: error instanceof Error ? error.message : 'Unknown error occurred.',
+      });
+    } finally {
+      setLoadingAction(null);
     }
   };
 
@@ -144,6 +227,7 @@ export default function EscrowPage() {
               key={escrow.id}
               escrow={escrow}
               onAction={handleAction}
+              loadingAction={loadingAction}
             />
           ))}
         </div>

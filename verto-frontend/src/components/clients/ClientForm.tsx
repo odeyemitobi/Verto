@@ -3,6 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { toast } from 'sonner';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
@@ -46,6 +47,7 @@ export default function ClientForm({ onSuccess, initialData }: ClientFormProps) 
   const onSubmit = (data: ClientFormData) => {
     if (initialData) {
       updateClient(initialData.id, data);
+      toast.success('Client updated');
     } else {
       const client: Client = {
         id: generateId(),
@@ -53,6 +55,9 @@ export default function ClientForm({ onSuccess, initialData }: ClientFormProps) 
         createdAt: new Date().toISOString(),
       };
       addClient(client);
+      toast.success('Client added', {
+        description: `${data.name} has been added to your clients.`,
+      });
     }
     onSuccess();
   };

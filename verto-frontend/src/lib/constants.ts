@@ -17,6 +17,7 @@ export const ESCROW_STATUSES = {
   delivered: { label: 'Delivered', color: 'orange' },
   completed: { label: 'Completed', color: 'emerald' },
   disputed: { label: 'Disputed', color: 'red' },
+  cancelled: { label: 'Cancelled', color: 'gray' },
 } as const;
 
 export const CURRENCIES = [

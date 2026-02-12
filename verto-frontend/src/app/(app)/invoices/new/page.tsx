@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { RiArrowLeftLine } from 'react-icons/ri';
+import { toast } from 'sonner';
 import Card from '@/components/ui/Card';
 import PageHeader from '@/components/layout/PageHeader';
 import InvoiceForm from '@/components/invoices/InvoiceForm';
@@ -15,6 +16,9 @@ export default function NewInvoicePage() {
 
   const handleSuccess = (invoice: Invoice) => {
     addInvoice(invoice);
+    toast.success('Invoice created', {
+      description: `${invoice.invoiceNumber} — ${invoice.clientName}`,
+    });
     router.push(`/invoices/${invoice.id}`);
   };
 

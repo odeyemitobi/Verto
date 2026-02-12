@@ -57,9 +57,11 @@ export interface Escrow {
   reviewDeadline?: string;
   completedAt?: string;
   invoiceId?: string;
+  txId?: string;
+  amountStx?: number;
 }
 
-export type EscrowStatus = 'created' | 'funded' | 'delivered' | 'completed' | 'disputed';
+export type EscrowStatus = 'created' | 'funded' | 'delivered' | 'completed' | 'disputed' | 'cancelled';
 
 // ─── Settings Types ──────────────────────────────────────────────────────────
 

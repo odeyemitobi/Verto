@@ -1,10 +1,13 @@
 import { create } from 'zustand';
-import {
-  connect as stacksConnect,
-  disconnect as stacksDisconnect,
-  isConnected as stacksIsConnected,
-  getLocalStorage,
-} from '@stacks/connect';
+
+/**
+ * @stacks/connect is loaded dynamically to prevent Turbopack SSR module-eval
+ * failures — the package contains browser-only code that cannot run during
+ * Next.js static prerendering.
+ */
+async function getStacksConnect() {
+  return await import('@stacks/connect');
+}
 
 interface WalletStore {
   isConnected: boolean;
@@ -27,29 +30,34 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
 
   hydrate: () => {
     if (get().hydrated) return;
-    try {
-      const connected = stacksIsConnected();
-      if (connected) {
-        const data = getLocalStorage();
-        const stxAddress = data?.addresses?.stx?.[0]?.address ?? null;
-        set({ isConnected: !!stxAddress, address: stxAddress, hydrated: true });
-      } else {
+    // Dynamic import so nothing runs during SSR
+    getStacksConnect()
+      .then(({ isConnected: stacksIsConnected, getLocalStorage }) => {
+        const connected = stacksIsConnected();
+        if (connected) {
+          const data = getLocalStorage();
+          const stxAddress = data?.addresses?.stx?.[0]?.address ?? null;
+          set({ isConnected: !!stxAddress, address: stxAddress, hydrated: true });
+        } else {
+          set({ hydrated: true });
+        }
+      })
+      .catch(() => {
         set({ hydrated: true });
-      }
-    } catch {
-      // SSR or localStorage unavailable
-      set({ hydrated: true });
-    }
+      });
   },
 
   connect: async () => {
     if (get().isConnecting) return;
     set({ isConnecting: true });
     try {
+      const { connect: stacksConnect, getLocalStorage } = await getStacksConnect();
       const response = await stacksConnect();
-      // After connect, addresses are stored in localStorage by @stacks/connect
+      const stxEntry = response?.addresses?.find(
+        (a: { symbol?: string }) => a.symbol === 'STX',
+      );
       const stxAddr =
-        response?.addresses?.stx?.[0]?.address ??
+        stxEntry?.address ??
         getLocalStorage()?.addresses?.stx?.[0]?.address ??
         null;
 
@@ -64,7 +72,11 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
   },
 
   disconnect: () => {
-    stacksDisconnect();
+    getStacksConnect()
+      .then(({ disconnect: stacksDisconnect }) => {
+        stacksDisconnect();
+      })
+      .catch(() => {});
     set({ isConnected: false, address: null });
   },
 

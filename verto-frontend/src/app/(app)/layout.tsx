@@ -5,23 +5,31 @@ import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 import MobileNav from '@/components/layout/MobileNav';
 import AuthGuard from '@/components/auth/AuthGuard';
+import { usePaymentMonitor } from '@/hooks/usePaymentMonitor';
+
+function PaymentMonitorWrapper({ children }: { children: React.ReactNode }) {
+  usePaymentMonitor();
+  return <>{children}</>;
+}
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gray-50/50 dark:bg-black">
-        <Sidebar />
-        <MobileNav
-          isOpen={isMobileNavOpen}
-          onClose={() => setIsMobileNavOpen(false)}
-        />
-        <div className="lg:pl-64">
-          <Header onMenuClick={() => setIsMobileNavOpen(true)} />
-          <main className="mx-auto max-w-7xl p-4 pt-6 lg:p-6 lg:pt-8">{children}</main>
+      <PaymentMonitorWrapper>
+        <div className="min-h-screen bg-gray-50/50 dark:bg-black">
+          <Sidebar />
+          <MobileNav
+            isOpen={isMobileNavOpen}
+            onClose={() => setIsMobileNavOpen(false)}
+          />
+          <div className="lg:pl-64">
+            <Header onMenuClick={() => setIsMobileNavOpen(true)} />
+            <main className="mx-auto max-w-7xl p-4 pt-6 lg:p-6 lg:pt-8">{children}</main>
+          </div>
         </div>
-      </div>
+      </PaymentMonitorWrapper>
     </AuthGuard>
   );
 }

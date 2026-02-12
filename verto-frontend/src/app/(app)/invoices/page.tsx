@@ -14,6 +14,7 @@ import Badge from '@/components/ui/Badge';
 import Input from '@/components/ui/Input';
 import EmptyState from '@/components/ui/EmptyState';
 import PageHeader from '@/components/layout/PageHeader';
+import { toast } from 'sonner';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { useInvoiceStore } from '@/stores/useInvoiceStore';
 import type { InvoiceStatus } from '@/types';
@@ -151,6 +152,7 @@ export default function InvoicesPage() {
                     e.preventDefault();
                     e.stopPropagation();
                     deleteInvoice(invoice.id);
+                    toast.success('Invoice deleted');
                   }}
                   aria-label="Delete invoice"
                   className="self-start rounded-lg p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10"
