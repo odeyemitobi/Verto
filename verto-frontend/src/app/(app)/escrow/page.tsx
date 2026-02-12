@@ -6,6 +6,7 @@ import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Modal from '@/components/ui/Modal';
 import EmptyState from '@/components/ui/EmptyState';
+import PageHeader from '@/components/layout/PageHeader';
 import EscrowCard from '@/components/escrow/EscrowCard';
 import CreateEscrowForm from '@/components/escrow/CreateEscrowForm';
 import { useEscrowStore } from '@/stores/useEscrowStore';
@@ -64,23 +65,26 @@ export default function EscrowPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Escrow
-          </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Manage trustless escrow contracts for your projects.
-          </p>
-        </div>
-        <Button
-          icon={<RiAddLine className="h-4 w-4" />}
-          onClick={() => setIsModalOpen(true)}
-          disabled={!isConnected}
-        >
-          New Escrow
-        </Button>
-      </div>
+      <PageHeader
+        title="Escrow"
+        description="Manage trustless escrow contracts for your projects."
+        badge={
+          escrows.length > 0 ? (
+            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-600 dark:bg-neutral-800 dark:text-gray-400">
+              {escrows.length}
+            </span>
+          ) : undefined
+        }
+        action={
+          <Button
+            icon={<RiAddLine className="h-4 w-4" />}
+            onClick={() => setIsModalOpen(true)}
+            disabled={!isConnected}
+          >
+            New Escrow
+          </Button>
+        }
+      />
 
       {/* Wallet warning */}
       {!isConnected && (

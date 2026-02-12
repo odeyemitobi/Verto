@@ -13,6 +13,7 @@ import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Input from '@/components/ui/Input';
 import EmptyState from '@/components/ui/EmptyState';
+import PageHeader from '@/components/layout/PageHeader';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { useInvoiceStore } from '@/stores/useInvoiceStore';
 import type { InvoiceStatus } from '@/types';
@@ -48,21 +49,24 @@ export default function InvoicesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Invoices
-          </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Manage and track all your invoices.
-          </p>
-        </div>
-        <Link href="/invoices/new">
-          <Button icon={<RiAddLine className="h-4 w-4" />}>
-            New Invoice
-          </Button>
-        </Link>
-      </div>
+      <PageHeader
+        title="Invoices"
+        description="Manage and track all your invoices."
+        badge={
+          invoices.length > 0 ? (
+            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-600 dark:bg-neutral-800 dark:text-gray-400">
+              {invoices.length}
+            </span>
+          ) : undefined
+        }
+        action={
+          <Link href="/invoices/new">
+            <Button icon={<RiAddLine className="h-4 w-4" />}>
+              New Invoice
+            </Button>
+          </Link>
+        }
+      />
 
       {/* Filters */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

@@ -11,7 +11,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gray-50 dark:bg-black">
+      <div className="min-h-screen bg-gray-50/50 dark:bg-black">
         <Sidebar />
         <MobileNav
           isOpen={isMobileNavOpen}
@@ -19,7 +19,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         />
         <div className="lg:pl-64">
           <Header onMenuClick={() => setIsMobileNavOpen(true)} />
-          <main className="p-4 lg:p-6">{children}</main>
+          <main className="mx-auto max-w-7xl p-4 pt-6 lg:p-6 lg:pt-8">{children}</main>
         </div>
       </div>
     </AuthGuard>

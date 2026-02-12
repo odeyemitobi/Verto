@@ -1,7 +1,10 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { RiArrowLeftLine } from 'react-icons/ri';
 import Card from '@/components/ui/Card';
+import PageHeader from '@/components/layout/PageHeader';
 import InvoiceForm from '@/components/invoices/InvoiceForm';
 import { useInvoiceStore } from '@/stores/useInvoiceStore';
 import type { Invoice } from '@/types';
@@ -17,15 +20,20 @@ export default function NewInvoicePage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      {/* Back link */}
+      <Link
+        href="/invoices"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+      >
+        <RiArrowLeftLine className="h-4 w-4" />
+        Back to Invoices
+      </Link>
+
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Create Invoice
-        </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Fill in the details below to generate a new invoice.
-        </p>
-      </div>
+      <PageHeader
+        title="Create Invoice"
+        description="Fill in the details below to generate a new invoice."
+      />
 
       {/* Form */}
       <Card>

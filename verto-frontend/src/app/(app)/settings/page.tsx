@@ -8,6 +8,7 @@ import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import Button from '@/components/ui/Button';
+import PageHeader from '@/components/layout/PageHeader';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useWalletStore } from '@/stores/useWalletStore';
 import { CURRENCIES } from '@/lib/constants';
@@ -44,14 +45,10 @@ export default function SettingsPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Settings
-        </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Configure your Verto workspace.
-        </p>
-      </div>
+      <PageHeader
+        title="Settings"
+        description="Configure your Verto workspace."
+      />
 
       {/* Business settings */}
       <Card>

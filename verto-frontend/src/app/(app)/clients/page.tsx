@@ -14,6 +14,7 @@ import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 import Modal from '@/components/ui/Modal';
 import EmptyState from '@/components/ui/EmptyState';
+import PageHeader from '@/components/layout/PageHeader';
 import ClientForm from '@/components/clients/ClientForm';
 import { formatDate } from '@/lib/utils';
 import { useClientStore } from '@/stores/useClientStore';
@@ -44,22 +45,25 @@ export default function ClientsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Clients
-          </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Manage your client relationships.
-          </p>
-        </div>
-        <Button
-          icon={<RiAddLine className="h-4 w-4" />}
-          onClick={() => setIsModalOpen(true)}
-        >
-          Add Client
-        </Button>
-      </div>
+      <PageHeader
+        title="Clients"
+        description="Manage your client relationships."
+        badge={
+          clients.length > 0 ? (
+            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-600 dark:bg-neutral-800 dark:text-gray-400">
+              {clients.length}
+            </span>
+          ) : undefined
+        }
+        action={
+          <Button
+            icon={<RiAddLine className="h-4 w-4" />}
+            onClick={() => setIsModalOpen(true)}
+          >
+            Add Client
+          </Button>
+        }
+      />
 
       {/* Search */}
       <div className="w-full sm:max-w-xs">
