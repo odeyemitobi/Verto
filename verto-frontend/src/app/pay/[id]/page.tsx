@@ -1,6 +1,7 @@
 'use client';
 
-import { use, useState, useEffect } from 'react';
+import { use, useState, useEffect, useRef } from 'react';
+import QRCode from 'qrcode';
 import { RiFileCopyLine, RiBitCoinLine, RiTimeLine } from 'react-icons/ri';
 import { toast } from 'sonner';
 import Card from '@/components/ui/Card';
@@ -33,6 +34,23 @@ export default function PublicPaymentPage({
       </div>
     );
   }
+
+  const qrCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Generate QR code when component mounts or address changes
+  useEffect(() => {
+    if (qrCanvasRef.current && invoice?.paymentAddress && invoice.status !== 'paid') {
+      const btcUri = invoice.amountBtc > 0
+        ? `bitcoin:${invoice.paymentAddress}?amount=${invoice.amountBtc}`
+        : `bitcoin:${invoice.paymentAddress}`;
+
+      QRCode.toCanvas(qrCanvasRef.current, btcUri, {
+        width: 200,
+        margin: 2,
+        color: { dark: '#1f2937', light: '#ffffff' },
+      });
+    }
+  }, [invoice?.paymentAddress, invoice?.amountBtc, invoice?.status]);
 
   const handleCopyAddress = () => {
     navigator.clipboard.writeText(invoice.paymentAddress);
@@ -117,12 +135,24 @@ export default function PublicPaymentPage({
           </div>
         </Card>
 
-        {/* Payment Address */}
+        {/* Payment Address + QR Code */}
         {!isPaid && (
           <Card>
-            <h3 className="mb-3 text-sm font-semibold text-gray-900 dark:text-white">
+            <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
               Send payment to
             </h3>
+
+            {/* QR Code */}
+            <div className="mb-4 flex justify-center">
+              <div className="rounded-xl border border-gray-200 bg-white p-3 dark:border-neutral-700">
+                <canvas ref={qrCanvasRef} className="mx-auto" />
+              </div>
+            </div>
+            <p className="mb-4 text-center text-xs text-gray-500 dark:text-gray-400">
+              Scan with any Bitcoin wallet
+            </p>
+
+            {/* Address + copy */}
             <div className="flex items-center gap-2">
               <code className="flex-1 overflow-hidden text-ellipsis rounded-lg bg-gray-50 px-3 py-2.5 text-xs text-gray-700 dark:bg-neutral-800 dark:text-gray-300 font-mono">
                 {invoice.paymentAddress}

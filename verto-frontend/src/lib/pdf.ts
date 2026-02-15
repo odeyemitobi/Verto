@@ -2,11 +2,27 @@
  * PDF Invoice Generation using jsPDF
  * Generates professional PDF invoices client-side
  *
- * jsPDF is dynamically imported to avoid Turbopack SSR module‑eval failures.
+ * jsPDF and qrcode are dynamically imported to avoid Turbopack SSR module‑eval failures.
  */
 import type { Invoice } from '@/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { formatBtcAmount } from '@/lib/price';
+
+/**
+ * Generate a QR code as a data URL for embedding in PDFs
+ */
+async function generateQrDataUrl(text: string): Promise<string | null> {
+  try {
+    const QRCode = await import('qrcode');
+    return await QRCode.toDataURL(text, {
+      width: 200,
+      margin: 1,
+      color: { dark: '#1f2937', light: '#ffffff' },
+    });
+  } catch {
+    return null;
+  }
+}
 
 export async function generateInvoicePdf(
   invoice: Invoice,
@@ -180,7 +196,25 @@ export async function generateInvoicePdf(
   doc.setFontSize(8);
   doc.text(invoice.paymentAddress, margin + 3, y + 5);
 
-  y += 18;
+  y += 14;
+
+  // QR Code
+  const btcUri = invoice.amountBtc > 0
+    ? `bitcoin:${invoice.paymentAddress}?amount=${invoice.amountBtc}`
+    : `bitcoin:${invoice.paymentAddress}`;
+  const qrDataUrl = await generateQrDataUrl(btcUri);
+  if (qrDataUrl) {
+    const qrSize = 35;
+    const qrX = margin + (contentWidth - qrSize) / 2;
+    doc.addImage(qrDataUrl, 'PNG', qrX, y, qrSize, qrSize);
+    y += qrSize + 3;
+    doc.setFontSize(7);
+    doc.setTextColor(...grayColor);
+    doc.text('Scan with any Bitcoin wallet', pageWidth / 2, y, { align: 'center' });
+    y += 6;
+  } else {
+    y += 4;
+  }
 
   // ── Notes ──
   if (invoice.notes) {
