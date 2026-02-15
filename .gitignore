@@ -25,7 +25,10 @@ history.txt
 # Environment variables
 .env
 .env.*
-!.env.example
+
+# Deployment (private)
+DEPLOYMENT.md
+verto-contract/scripts/deploy-testnet.mjs
 
 # OS files
 .DS_Store

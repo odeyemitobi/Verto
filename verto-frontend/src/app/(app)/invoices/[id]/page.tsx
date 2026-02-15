@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { use, useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+import { use, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   RiArrowLeftLine,
   RiDeleteBinLine,
@@ -13,19 +13,22 @@ import {
   RiDownloadLine,
   RiRefreshLine,
   RiShareLine,
-} from 'react-icons/ri';
-import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
-import Modal from '@/components/ui/Modal';
-import { formatCurrency, formatDate, formatBtc } from '@/lib/utils';
-import { useInvoiceStore } from '@/stores/useInvoiceStore';
-import { useSettingsStore } from '@/stores/useSettingsStore';
-import { downloadInvoicePdf } from '@/lib/pdf';
-import { fetchBtcPrice, formatBtcAmount } from '@/lib/price';
-import { checkPaymentReceived, btcToSats, getMempoolTxUrl } from '@/lib/mempool';
-import InvoiceForm from '@/components/invoices/InvoiceForm';
-import type { Invoice } from '@/types';
+} from "react-icons/ri";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import Badge from "@/components/ui/Badge";
+import Modal from "@/components/ui/Modal";
+import { formatCurrency, formatDate, formatBtc } from "@/lib/utils";
+import { useInvoiceStore } from "@/stores/useInvoiceStore";
+import { useSettingsStore } from "@/stores/useSettingsStore";
+import { downloadInvoicePdf } from "@/lib/pdf";
+import {
+  checkPaymentReceived,
+  btcToSats,
+  getMempoolTxUrl,
+} from "@/lib/mempool";
+import InvoiceForm from "@/components/invoices/InvoiceForm";
+import type { Invoice } from "@/types";
 
 export default function InvoiceDetailPage({
   params,
@@ -61,31 +64,36 @@ export default function InvoiceDetailPage({
 
   const handleMarkPaid = () => {
     updateInvoice(invoice.id, {
-      status: 'paid',
+      status: "paid",
       paidAt: new Date().toISOString(),
     });
-    toast.success('Invoice marked as paid');
+    toast.success("Invoice marked as paid");
   };
 
   const handleDelete = () => {
     deleteInvoice(invoice.id);
-    toast.success('Invoice deleted');
-    router.push('/invoices');
+    toast.success("Invoice deleted");
+    router.push("/invoices");
   };
 
   const handleCopyAddress = () => {
     navigator.clipboard.writeText(invoice.paymentAddress);
-    toast.success('Payment address copied to clipboard');
+    toast.success("Payment address copied to clipboard");
   };
 
   const handleDownloadPdf = () => {
-    downloadInvoicePdf(invoice, settings.businessName, settings.email);
-    toast.success('PDF downloaded');
+    downloadInvoicePdf(
+      invoice,
+      settings.businessName,
+      settings.email,
+      settings.logo,
+    );
+    toast.success("PDF downloaded");
   };
 
   const handleCheckPayment = async () => {
     if (!invoice.amountBtc || invoice.amountBtc <= 0) {
-      toast.error('Cannot check payment — no BTC amount set');
+      toast.error("Cannot check payment — no BTC amount set");
       return;
     }
     setIsCheckingPayment(true);
@@ -97,24 +105,27 @@ export default function InvoiceDetailPage({
       );
       if (result) {
         updateInvoice(invoice.id, {
-          status: 'paid',
+          status: "paid",
           paidAt: new Date().toISOString(),
           txHash: result.txHash,
         });
-        toast.success('Payment found!', {
-          description: result.confirmed ? 'Confirmed on-chain.' : 'In mempool, awaiting confirmation.',
+        toast.success("Payment found!", {
+          description: result.confirmed
+            ? "Confirmed on-chain."
+            : "In mempool, awaiting confirmation.",
           action: {
-            label: 'View TX',
-            onClick: () => window.open(getMempoolTxUrl(result.txHash), '_blank'),
+            label: "View TX",
+            onClick: () =>
+              window.open(getMempoolTxUrl(result.txHash), "_blank"),
           },
         });
       } else {
-        toast.info('No payment detected yet', {
-          description: 'We\'ll keep checking in the background.',
+        toast.info("No payment detected yet", {
+          description: "We'll keep checking in the background.",
         });
       }
     } catch {
-      toast.error('Failed to check payment');
+      toast.error("Failed to check payment");
     } finally {
       setIsCheckingPayment(false);
     }
@@ -123,13 +134,13 @@ export default function InvoiceDetailPage({
   const handleEditSuccess = (updated: Invoice) => {
     updateInvoice(invoice.id, updated);
     setIsEditing(false);
-    toast.success('Invoice updated');
+    toast.success("Invoice updated");
   };
 
   const handleShareLink = () => {
     const url = `${window.location.origin}/pay/${invoice.id}`;
     navigator.clipboard.writeText(url);
-    toast.success('Payment link copied to clipboard', {
+    toast.success("Payment link copied to clipboard", {
       description: url,
     });
   };
@@ -159,7 +170,7 @@ export default function InvoiceDetailPage({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          {invoice.status === 'pending' && (
+          {invoice.status === "pending" && (
             <>
               <Button
                 size="sm"
@@ -363,10 +374,7 @@ export default function InvoiceDetailPage({
         onClose={() => setIsEditing(false)}
         title="Edit Invoice"
       >
-        <InvoiceForm
-          onSuccess={handleEditSuccess}
-          initialData={invoice}
-        />
+        <InvoiceForm onSuccess={handleEditSuccess} initialData={invoice} />
       </Modal>
     </div>
   );

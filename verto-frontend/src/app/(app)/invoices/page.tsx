@@ -1,37 +1,39 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import Link from 'next/link';
+import { useState, useMemo } from "react";
+import Link from "next/link";
 import {
   RiAddLine,
   RiSearchLine,
   RiFileTextLine,
   RiDeleteBinLine,
-} from 'react-icons/ri';
-import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
-import Input from '@/components/ui/Input';
-import EmptyState from '@/components/ui/EmptyState';
-import PageHeader from '@/components/layout/PageHeader';
-import { toast } from 'sonner';
-import { formatCurrency, formatDate } from '@/lib/utils';
-import { useInvoiceStore } from '@/stores/useInvoiceStore';
-import type { InvoiceStatus } from '@/types';
+  RiDownloadLine,
+} from "react-icons/ri";
+import { exportInvoicesCsv } from "@/lib/csv";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import Badge from "@/components/ui/Badge";
+import Input from "@/components/ui/Input";
+import EmptyState from "@/components/ui/EmptyState";
+import PageHeader from "@/components/layout/PageHeader";
+import { toast } from "sonner";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import { useInvoiceStore } from "@/stores/useInvoiceStore";
+import type { InvoiceStatus } from "@/types";
 
-const STATUS_FILTERS: { label: string; value: InvoiceStatus | 'all' }[] = [
-  { label: 'All', value: 'all' },
-  { label: 'Pending', value: 'pending' },
-  { label: 'Paid', value: 'paid' },
-  { label: 'Overdue', value: 'overdue' },
-  { label: 'Draft', value: 'draft' },
+const STATUS_FILTERS: { label: string; value: InvoiceStatus | "all" }[] = [
+  { label: "All", value: "all" },
+  { label: "Pending", value: "pending" },
+  { label: "Paid", value: "paid" },
+  { label: "Overdue", value: "overdue" },
+  { label: "Draft", value: "draft" },
 ];
 
 export default function InvoicesPage() {
   const { invoices, deleteInvoice } = useInvoiceStore();
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<InvoiceStatus | 'all'>(
-    'all',
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<InvoiceStatus | "all">(
+    "all",
   );
 
   const filtered = useMemo(() => {
@@ -42,7 +44,7 @@ export default function InvoicesPage() {
         inv.clientName.toLowerCase().includes(search.toLowerCase()) ||
         inv.description.toLowerCase().includes(search.toLowerCase());
       const matchesStatus =
-        statusFilter === 'all' || inv.status === statusFilter;
+        statusFilter === "all" || inv.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
   }, [invoices, search, statusFilter]);
@@ -61,11 +63,22 @@ export default function InvoicesPage() {
           ) : undefined
         }
         action={
-          <Link href="/invoices/new">
-            <Button icon={<RiAddLine className="h-4 w-4" />}>
-              New Invoice
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            {invoices.length > 0 && (
+              <Button
+                variant="outline"
+                icon={<RiDownloadLine className="h-4 w-4" />}
+                onClick={() => exportInvoicesCsv(invoices)}
+              >
+                Export CSV
+              </Button>
+            )}
+            <Link href="/invoices/new">
+              <Button icon={<RiAddLine className="h-4 w-4" />}>
+                New Invoice
+              </Button>
+            </Link>
+          </div>
         }
       />
 
@@ -86,8 +99,8 @@ export default function InvoicesPage() {
               onClick={() => setStatusFilter(f.value)}
               className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                 statusFilter === f.value
-                  ? 'bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400'
-                  : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-neutral-800'
+                  ? "bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400"
+                  : "text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-neutral-800"
               }`}
             >
               {f.label}
@@ -101,16 +114,16 @@ export default function InvoicesPage() {
         <Card>
           <EmptyState
             icon={<RiFileTextLine className="h-7 w-7" />}
-            title={invoices.length === 0 ? 'No invoices yet' : 'No matches'}
+            title={invoices.length === 0 ? "No invoices yet" : "No matches"}
             description={
               invoices.length === 0
-                ? 'Create your first invoice to start getting paid in Bitcoin.'
-                : 'Try adjusting your search or filter criteria.'
+                ? "Create your first invoice to start getting paid in Bitcoin."
+                : "Try adjusting your search or filter criteria."
             }
-            actionLabel={invoices.length === 0 ? 'Create Invoice' : undefined}
+            actionLabel={invoices.length === 0 ? "Create Invoice" : undefined}
             onAction={
               invoices.length === 0
-                ? () => (window.location.href = '/invoices/new')
+                ? () => (window.location.href = "/invoices/new")
                 : undefined
             }
           />
@@ -152,7 +165,7 @@ export default function InvoicesPage() {
                     e.preventDefault();
                     e.stopPropagation();
                     deleteInvoice(invoice.id);
-                    toast.success('Invoice deleted');
+                    toast.success("Invoice deleted");
                   }}
                   aria-label="Delete invoice"
                   className="self-start rounded-lg p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10"

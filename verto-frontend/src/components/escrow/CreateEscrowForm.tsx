@@ -1,28 +1,28 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { toast } from 'sonner';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import Textarea from '@/components/ui/Textarea';
-import { useEscrowStore } from '@/stores/useEscrowStore';
-import { useWalletStore } from '@/stores/useWalletStore';
-import { generateId } from '@/lib/utils';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { toast } from "sonner";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import Textarea from "@/components/ui/Textarea";
+import { useEscrowStore } from "@/stores/useEscrowStore";
+import { useWalletStore } from "@/stores/useWalletStore";
+import { generateId } from "@/lib/utils";
 import {
   contractCreateEscrow,
   stxToMicrostacks,
   getExplorerTxUrl,
-} from '@/lib/stacks';
-import { usdToBtc, fetchBtcPrice } from '@/lib/price';
-import type { Escrow } from '@/types';
+} from "@/lib/stacks";
+import { usdToBtc, fetchBtcPrice } from "@/lib/price";
+import type { Escrow } from "@/types";
 
 const escrowSchema = z.object({
-  clientAddress: z.string().min(1, 'Client address is required'),
-  amount: z.number().min(0.01, 'Amount must be greater than 0'),
-  projectDescription: z.string().min(1, 'Description is required'),
+  clientAddress: z.string().min(1, "Client address is required"),
+  amount: z.number().min(0.01, "Amount must be greater than 0"),
+  projectDescription: z.string().min(1, "Description is required"),
 });
 
 type EscrowFormData = z.infer<typeof escrowSchema>;
@@ -65,31 +65,31 @@ export default function CreateEscrowForm({ onSuccess }: CreateEscrowFormProps) {
           id: generateId(),
           escrowId: escrows.length,
           clientAddress: data.clientAddress,
-          freelancerAddress: address || '',
+          freelancerAddress: address || "",
           amount: data.amount,
           amountUsd: data.amount,
           amountStx: amountMicrostacks,
-          status: 'created',
+          status: "created",
           projectDescription: data.projectDescription,
           createdAt: new Date().toISOString(),
           txId,
         };
 
         addEscrow(escrow);
-        toast.success('Escrow contract created!', {
-          description: 'Transaction submitted. Waiting for client to fund.',
+        toast.success("Escrow contract created!", {
+          description: "Transaction submitted. Waiting for client to fund.",
           action: {
-            label: 'View TX',
-            onClick: () => window.open(getExplorerTxUrl(txId), '_blank'),
+            label: "View TX",
+            onClick: () => window.open(getExplorerTxUrl(txId), "_blank"),
           },
         });
         onSuccess();
       } else {
-        toast.info('Transaction cancelled by user.');
+        toast.info("Transaction cancelled by user.");
       }
     } catch (error) {
-      toast.error('Failed to create escrow', {
-        description: error instanceof Error ? error.message : 'Unknown error',
+      toast.error("Failed to create escrow", {
+        description: error instanceof Error ? error.message : "Unknown error",
       });
     } finally {
       setIsSubmitting(false);
@@ -102,21 +102,22 @@ export default function CreateEscrowForm({ onSuccess }: CreateEscrowFormProps) {
         label="Client Wallet Address"
         placeholder="SP... or ST..."
         error={errors.clientAddress?.message}
-        {...register('clientAddress')}
+        {...register("clientAddress")}
       />
       <Input
         label="Amount (STX)"
         type="number"
         step="0.01"
-        placeholder="1000.00"
+        placeholder="100.00"
+        hint="Amount in STX tokens to lock in escrow"
         error={errors.amount?.message}
-        {...register('amount', { valueAsNumber: true })}
+        {...register("amount", { valueAsNumber: true })}
       />
       <Textarea
         label="Project Description"
         placeholder="Describe the scope of work for this escrow..."
         error={errors.projectDescription?.message}
-        {...register('projectDescription')}
+        {...register("projectDescription")}
       />
       <div className="flex justify-end pt-2">
         <Button type="submit" isLoading={isSubmitting}>
