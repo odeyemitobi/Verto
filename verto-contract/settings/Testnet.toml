@@ -1,0 +1,6 @@
+[network]
+name = "testnet"
+deployment_fee_rate = 10
+
+[accounts.deployer]
+mnemonic = "space cabin auto assume mule impact goose melody green pupil mention dutch arrive abuse grit learn tenant then gap style round rabbit bus special"

@@ -28,7 +28,7 @@ history.txt
 
 # Deployment (private)
 DEPLOYMENT.md
-verto-contract/scripts/deploy-testnet.mjs
+verto-contract/deployments/
 
 # OS files
 .DS_Store

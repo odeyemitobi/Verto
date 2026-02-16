@@ -16,7 +16,8 @@
 import { readFileSync } from 'fs';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
-import {
+import txPkg from '@stacks/transactions';
+const {
   makeContractDeploy,
   broadcastTransaction,
   AnchorMode,
@@ -24,9 +25,11 @@ import {
   principalCV,
   PostConditionMode,
   ClarityVersion,
-  getNonce,
-} from '@stacks/transactions';
-import { StacksTestnet } from '@stacks/network';
+  fetchNonce,
+  getAddressFromPrivateKey,
+} = txPkg;
+import netPkg from '@stacks/network';
+const { STACKS_TESTNET, TransactionVersion } = netPkg;
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
@@ -40,7 +43,7 @@ if (!PRIVATE_KEY) {
   process.exit(1);
 }
 
-const network = new StacksTestnet();
+const network = STACKS_TESTNET;
 
 // Contracts in deployment order (storage first, then logic)
 // escrow-storage-trait is not deployed separately — it's just a local dev artefact
@@ -100,13 +103,12 @@ async function main() {
   console.log('═══════════════════════════════════════════════════════');
 
   // Derive sender address for logging
-  const { getAddressFromPrivateKey, TransactionVersion } = await import('@stacks/transactions');
   const senderAddress = getAddressFromPrivateKey(PRIVATE_KEY, TransactionVersion.Testnet);
   console.log(`   Deployer: ${senderAddress}`);
   console.log('');
 
   // Track the nonce manually to avoid conflicts with sequential deploys
-  let nonce = await getNonce(senderAddress, network);
+  let nonce = await fetchNonce({ address: senderAddress, network });
 
   // ── Step 1 & 2: Deploy contracts ──────────────────────────────────────────
 

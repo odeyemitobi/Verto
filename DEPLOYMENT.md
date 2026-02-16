@@ -19,7 +19,7 @@ If you don't already have one:
 
 You need testnet STX to pay deployment fees (~0.15 STX total for all three transactions).
 
-1. Go to the **Stacks Testnet Faucet**: https://explorer.hiro.so/sandbox/faucet?chain=testnet
+1. Go to the **Stacks Testnet Faucet**: https://platform.hiro.so/faucet
 2. Connect your Leather wallet (or paste your testnet address)
 3. Request STX — you'll receive 500 testnet STX
 4. Wait 1-2 minutes for the faucet transaction to confirm
