@@ -70,7 +70,7 @@ export default function Navbar() {
             <button
               onClick={connect}
               disabled={isConnecting}
-              className="hidden items-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-600 disabled:opacity-60 sm:flex"
+              className="hidden items-center gap-2 cursor-pointer rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 sm:flex"
             >
               {isConnecting ? (
                 <RiLoader4Line className="h-4 w-4 animate-spin" />

@@ -1,38 +1,35 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useForm, useFieldArray, useWatch } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import {
-  RiAddLine,
-  RiDeleteBinLine,
-} from 'react-icons/ri';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import Textarea from '@/components/ui/Textarea';
-import Select from '@/components/ui/Select';
-import { useClientStore } from '@/stores/useClientStore';
-import { useInvoiceStore } from '@/stores/useInvoiceStore';
-import { useSettingsStore } from '@/stores/useSettingsStore';
-import { generateId, generateInvoiceNumber } from '@/lib/utils';
-import { fetchBtcPrice, formatBtcAmount } from '@/lib/price';
-import type { Invoice } from '@/types';
+import { useState, useEffect } from "react";
+import { useForm, useFieldArray, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { RiAddLine, RiDeleteBinLine } from "react-icons/ri";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import Textarea from "@/components/ui/Textarea";
+import Select from "@/components/ui/Select";
+import { useClientStore } from "@/stores/useClientStore";
+import { useInvoiceStore } from "@/stores/useInvoiceStore";
+import { useSettingsStore } from "@/stores/useSettingsStore";
+import { generateId, generateInvoiceNumber } from "@/lib/utils";
+import { fetchBtcPrice, formatBtcAmount } from "@/lib/price";
+import type { Invoice } from "@/types";
 
 const lineItemSchema = z.object({
   id: z.string(),
-  description: z.string().min(1, 'Description is required'),
-  quantity: z.number().min(1, 'Min 1'),
-  rate: z.number().min(0, 'Min 0'),
+  description: z.string().min(1, "Description is required"),
+  quantity: z.number().min(1, "Min 1"),
+  rate: z.number().min(0, "Min 0"),
   amount: z.number(),
 });
 
 const invoiceSchema = z.object({
-  clientId: z.string().min(1, 'Select a client'),
-  description: z.string().min(1, 'Description is required'),
-  items: z.array(lineItemSchema).min(1, 'Add at least one item'),
-  paymentAddress: z.string().min(1, 'Payment address is required'),
-  dueDate: z.string().min(1, 'Due date is required'),
+  clientId: z.string().min(1, "Select a client"),
+  description: z.string().min(1, "Description is required"),
+  items: z.array(lineItemSchema).min(1, "Add at least one item"),
+  paymentAddress: z.string().min(1, "Payment address is required"),
+  dueDate: z.string().min(1, "Due date is required"),
   notes: z.string().optional(),
 });
 
@@ -43,7 +40,10 @@ interface InvoiceFormProps {
   initialData?: Partial<Invoice>;
 }
 
-export default function InvoiceForm({ onSuccess, initialData }: InvoiceFormProps) {
+export default function InvoiceForm({
+  onSuccess,
+  initialData,
+}: InvoiceFormProps) {
   const { clients } = useClientStore();
   const { invoices } = useInvoiceStore();
   const { settings } = useSettingsStore();
@@ -69,24 +69,24 @@ export default function InvoiceForm({ onSuccess, initialData }: InvoiceFormProps
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(invoiceSchema) as any,
     defaultValues: {
-      clientId: initialData?.clientId || '',
-      description: initialData?.description || '',
+      clientId: initialData?.clientId || "",
+      description: initialData?.description || "",
       items: initialData?.items || [
-        { id: generateId(), description: '', quantity: 1, rate: 0, amount: 0 },
+        { id: generateId(), description: "", quantity: 1, rate: 0, amount: 0 },
       ],
       paymentAddress:
-        initialData?.paymentAddress || settings.defaultPaymentAddress || '',
-      dueDate: initialData?.dueDate || '',
-      notes: initialData?.notes || '',
+        initialData?.paymentAddress || settings.defaultPaymentAddress || "",
+      dueDate: initialData?.dueDate || "",
+      notes: initialData?.notes || "",
     },
   });
 
   const { fields, append, remove } = useFieldArray({
     control,
-    name: 'items',
+    name: "items",
   });
 
-  const watchedItems = useWatch({ control, name: 'items' });
+  const watchedItems = useWatch({ control, name: "items" });
 
   const updateAmount = (index: number) => {
     const qty = watchedItems[index]?.quantity || 0;
@@ -114,13 +114,13 @@ export default function InvoiceForm({ onSuccess, initialData }: InvoiceFormProps
         initialData?.invoiceNumber ||
         generateInvoiceNumber(settings.invoicePrefix, invoices.length),
       clientId: data.clientId,
-      clientName: client?.name || 'Unknown',
+      clientName: client?.name || "Unknown",
       description: data.description,
       items,
       amountUsd: totalUsd,
       amountBtc: totalBtc,
       paymentAddress: data.paymentAddress,
-      status: 'pending',
+      status: "pending",
       dueDate: data.dueDate,
       createdAt: initialData?.createdAt || new Date().toISOString(),
       notes: data.notes,
@@ -138,13 +138,13 @@ export default function InvoiceForm({ onSuccess, initialData }: InvoiceFormProps
           options={clientOptions}
           placeholder="Select a client"
           error={errors.clientId?.message}
-          {...register('clientId')}
+          {...register("clientId")}
         />
         <Input
           label="Due Date"
           type="date"
           error={errors.dueDate?.message}
-          {...register('dueDate')}
+          {...register("dueDate")}
         />
       </div>
 
@@ -152,7 +152,7 @@ export default function InvoiceForm({ onSuccess, initialData }: InvoiceFormProps
         label="Project Description"
         placeholder="e.g. Website redesign project"
         error={errors.description?.message}
-        {...register('description')}
+        {...register("description")}
       />
 
       {/* Line Items */}
@@ -169,7 +169,7 @@ export default function InvoiceForm({ onSuccess, initialData }: InvoiceFormProps
             onClick={() =>
               append({
                 id: generateId(),
-                description: '',
+                description: "",
                 quantity: 1,
                 rate: 0,
                 amount: 0,
@@ -188,7 +188,7 @@ export default function InvoiceForm({ onSuccess, initialData }: InvoiceFormProps
             >
               <div className="col-span-12 sm:col-span-5">
                 <Input
-                  placeholder="Description"
+                  placeholder="e.g. UI Design"
                   error={errors.items?.[index]?.description?.message}
                   {...register(`items.${index}.description`)}
                 />
@@ -196,7 +196,7 @@ export default function InvoiceForm({ onSuccess, initialData }: InvoiceFormProps
               <div className="col-span-4 sm:col-span-2">
                 <Input
                   type="number"
-                  placeholder="Qty"
+                  placeholder="1"
                   min={1}
                   {...register(`items.${index}.quantity`, {
                     valueAsNumber: true,
@@ -207,7 +207,7 @@ export default function InvoiceForm({ onSuccess, initialData }: InvoiceFormProps
               <div className="col-span-5 sm:col-span-3">
                 <Input
                   type="number"
-                  placeholder="Rate ($)"
+                  placeholder="500.00"
                   min={0}
                   step="0.01"
                   {...register(`items.${index}.rate`, {
@@ -239,7 +239,7 @@ export default function InvoiceForm({ onSuccess, initialData }: InvoiceFormProps
           ))}
         </div>
 
-        {errors.items && typeof errors.items.message === 'string' && (
+        {errors.items && typeof errors.items.message === "string" && (
           <p className="mt-1 text-xs text-red-500">{errors.items.message}</p>
         )}
 
@@ -266,20 +266,20 @@ export default function InvoiceForm({ onSuccess, initialData }: InvoiceFormProps
         label="Bitcoin Payment Address"
         placeholder="bc1q... or your STX address"
         error={errors.paymentAddress?.message}
-        {...register('paymentAddress')}
+        {...register("paymentAddress")}
       />
 
       {/* Notes */}
       <Textarea
         label="Notes (optional)"
         placeholder="Additional notes for the client..."
-        {...register('notes')}
+        {...register("notes")}
       />
 
       {/* Submit */}
       <div className="flex justify-end gap-3">
         <Button type="submit" isLoading={isSubmitting}>
-          {initialData ? 'Update Invoice' : 'Create Invoice'}
+          {initialData ? "Update Invoice" : "Create Invoice"}
         </Button>
       </div>
     </form>

@@ -37,9 +37,9 @@ export default function Footer() {
           {/* Social */}
           <div className="flex items-center gap-3">
             {[
-              { icon: RiTwitterXLine, href: '#', label: 'Twitter' },
-              { icon: RiGithubLine, href: '#', label: 'GitHub' },
-              { icon: RiDiscordLine, href: '#', label: 'Discord' },
+              { icon: RiTwitterXLine, href: 'https://twitter.com/Odeyemitobi95', label: 'Twitter' },
+              { icon: RiGithubLine, href: 'https://github.com/odeyemitobi/Verto', label: 'GitHub' },
+              { icon: RiDiscordLine, href: '', label: 'Discord' },
             ].map((social) => (
               <a
                 key={social.label}

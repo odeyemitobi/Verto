@@ -46,7 +46,7 @@ export default function Hero() {
           {isConnected ? (
             <Link
               href="/dashboard"
-              className="inline-flex h-12 items-center gap-2 rounded-xl bg-orange-500 px-8 text-base font-semibold text-white shadow-lg shadow-orange-500/25 transition-all hover:bg-orange-600 hover:shadow-xl hover:shadow-orange-500/30"
+              className="inline-flex h-12 cursor-pointer items-center gap-2 rounded-xl bg-orange-500 px-8 text-base font-semibold text-white shadow-lg shadow-orange-500/25"
             >
               Open Dashboard
               <RiArrowRightLine className="h-5 w-5" />
@@ -55,7 +55,7 @@ export default function Hero() {
             <button
               onClick={connect}
               disabled={isConnecting}
-              className="inline-flex h-12 items-center gap-2 rounded-xl bg-orange-500 px-8 text-base font-semibold text-white shadow-lg shadow-orange-500/25 transition-all hover:bg-orange-600 hover:shadow-xl hover:shadow-orange-500/30 disabled:opacity-60"
+              className="inline-flex h-12 cursor-pointer items-center gap-2 rounded-xl bg-orange-500 px-8 text-base font-semibold text-white shadow-lg shadow-orange-500/25 transition-all disabled:opacity-60"
             >
               {isConnecting ? (
                 <RiLoader4Line className="h-5 w-5 animate-spin" />
@@ -67,7 +67,7 @@ export default function Hero() {
           )}
           <a
             href="#features"
-            className="inline-flex h-12 items-center gap-2 rounded-xl border border-gray-300 bg-white px-8 text-base font-semibold text-gray-700 transition-all hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-gray-300 dark:hover:bg-neutral-800"
+            className="inline-flex h-12 items-center cursor-pointer gap-2 rounded-xl border border-gray-300 bg-white px-8 text-base font-semibold text-gray-700 transition-all hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-gray-300 dark:hover:bg-neutral-800"
           >
             Learn More
           </a>
