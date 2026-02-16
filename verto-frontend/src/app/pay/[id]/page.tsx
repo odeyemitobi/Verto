@@ -3,7 +3,8 @@
 import { use, useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import QRCode from "qrcode";
-import { RiFileCopyLine, RiBitCoinLine, RiTimeLine } from "react-icons/ri";
+import { RiFileCopyLine, RiTimeLine } from "react-icons/ri";
+import Image from "next/image";
 import { toast } from "sonner";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
@@ -113,9 +114,13 @@ function PaymentPageInner({ id }: { id: string }) {
       <div className="w-full max-w-lg space-y-6">
         {/* Header */}
         <div className="text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-100 dark:bg-orange-500/20">
-            <RiBitCoinLine className="h-7 w-7 text-orange-600" />
-          </div>
+          <Image
+            src="/vertologo.png"
+            alt="Verto"
+            width={56}
+            height={56}
+            className="mx-auto mb-4 rounded-2xl"
+          />
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {invoice.invoiceNumber}
           </h1>

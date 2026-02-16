@@ -14,6 +14,7 @@ import { useInvoiceStore } from "@/stores/useInvoiceStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import { generateId, generateInvoiceNumber } from "@/lib/utils";
 import { fetchBtcPrice, formatBtcAmount } from "@/lib/price";
+import { isValidBtcAddress, BTC_ADDRESS_ERROR } from "@/lib/btcAddress";
 import type { Invoice } from "@/types";
 
 const lineItemSchema = z.object({
@@ -28,7 +29,10 @@ const invoiceSchema = z.object({
   clientId: z.string().min(1, "Select a client"),
   description: z.string().min(1, "Description is required"),
   items: z.array(lineItemSchema).min(1, "Add at least one item"),
-  paymentAddress: z.string().min(1, "Payment address is required"),
+  paymentAddress: z
+    .string()
+    .min(1, "Payment address is required")
+    .refine(isValidBtcAddress, { message: BTC_ADDRESS_ERROR }),
   dueDate: z.string().min(1, "Due date is required"),
   notes: z.string().optional(),
 });

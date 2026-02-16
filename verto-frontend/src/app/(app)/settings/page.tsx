@@ -1,26 +1,33 @@
-'use client';
+"use client";
 
-import { useRef } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { RiSaveLine, RiUploadLine, RiCloseLine } from 'react-icons/ri';
-import { toast } from 'sonner';
-import Card from '@/components/ui/Card';
-import Input from '@/components/ui/Input';
-import Select from '@/components/ui/Select';
-import Button from '@/components/ui/Button';
-import PageHeader from '@/components/layout/PageHeader';
-import { useSettingsStore } from '@/stores/useSettingsStore';
-import { useWalletStore } from '@/stores/useWalletStore';
-import { CURRENCIES } from '@/lib/constants';
+import { useRef } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { RiSaveLine, RiUploadLine, RiCloseLine } from "react-icons/ri";
+import Image from "next/image";
+import { toast } from "sonner";
+import Card from "@/components/ui/Card";
+import Input from "@/components/ui/Input";
+import Select from "@/components/ui/Select";
+import Button from "@/components/ui/Button";
+import PageHeader from "@/components/layout/PageHeader";
+import { useSettingsStore } from "@/stores/useSettingsStore";
+import { useWalletStore } from "@/stores/useWalletStore";
+import { CURRENCIES } from "@/lib/constants";
+import { isValidBtcAddress, BTC_ADDRESS_ERROR } from "@/lib/btcAddress";
 
 const settingsSchema = z.object({
   businessName: z.string().optional(),
-  email: z.string().email('Valid email required').or(z.literal('')),
-  defaultPaymentAddress: z.string().optional(),
-  currency: z.enum(['USD', 'EUR', 'GBP']),
-  invoicePrefix: z.string().min(1, 'Prefix is required'),
+  email: z.string().email("Valid email required").or(z.literal("")),
+  defaultPaymentAddress: z
+    .string()
+    .optional()
+    .refine((val) => !val || val === "" || isValidBtcAddress(val), {
+      message: BTC_ADDRESS_ERROR,
+    }),
+  currency: z.enum(["USD", "EUR", "GBP"]),
+  invoicePrefix: z.string().min(1, "Prefix is required"),
   autoNumbering: z.boolean(),
 });
 
@@ -43,7 +50,7 @@ export default function SettingsPage() {
 
   const onSubmit = (data: SettingsFormData) => {
     updateSettings(data);
-    toast.success('Settings saved');
+    toast.success("Settings saved");
   };
 
   return (
@@ -68,18 +75,21 @@ export default function SettingsPage() {
             <div className="flex items-center gap-4">
               {settings.logo ? (
                 <div className="relative">
-                  <img
+                  <Image
                     src={settings.logo}
                     alt="Business logo"
+                    width={64}
+                    height={64}
                     className="h-16 w-16 rounded-lg border border-gray-200 object-contain dark:border-neutral-700"
                   />
                   <button
                     type="button"
                     onClick={() => {
                       updateSettings({ logo: undefined });
-                      toast.success('Logo removed');
+                      toast.success("Logo removed");
                     }}
                     className="absolute -right-1.5 -top-1.5 rounded-full bg-red-500 p-0.5 text-white shadow hover:bg-red-600"
+                    aria-label="Remove logo"
                   >
                     <RiCloseLine className="h-3 w-3" />
                   </button>
@@ -99,24 +109,27 @@ export default function SettingsPage() {
                 >
                   Upload Logo
                 </Button>
-                <p className="mt-1 text-xs text-gray-400">PNG, JPG up to 500KB</p>
+                <p className="mt-1 text-xs text-gray-400">
+                  PNG, JPG up to 500KB
+                </p>
               </div>
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
                 className="hidden"
+                aria-label="Upload business logo"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
                   if (file.size > 512_000) {
-                    toast.error('File too large', { description: 'Max 500KB' });
+                    toast.error("File too large", { description: "Max 500KB" });
                     return;
                   }
                   const reader = new FileReader();
                   reader.onload = () => {
                     updateSettings({ logo: reader.result as string });
-                    toast.success('Logo uploaded');
+                    toast.success("Logo uploaded");
                   };
                   reader.readAsDataURL(file);
                 }}
@@ -128,22 +141,23 @@ export default function SettingsPage() {
             <Input
               label="Business Name"
               placeholder="Your Business"
-              {...register('businessName')}
+              {...register("businessName")}
             />
             <Input
               label="Email"
               type="email"
               placeholder="you@example.com"
               error={errors.email?.message}
-              {...register('email')}
+              {...register("email")}
             />
           </div>
 
           <Input
             label="Default Payment Address"
-            placeholder="bc1q... or SP..."
-            hint="Pre-fills the payment address on new invoices."
-            {...register('defaultPaymentAddress')}
+            placeholder="bc1q... or tb1q..."
+            hint="Bitcoin address pre-filled on new invoices."
+            error={errors.defaultPaymentAddress?.message}
+            {...register("defaultPaymentAddress")}
           />
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -153,13 +167,13 @@ export default function SettingsPage() {
                 value: c.value,
                 label: c.label,
               }))}
-              {...register('currency')}
+              {...register("currency")}
             />
             <Input
               label="Invoice Prefix"
               placeholder="INV"
               error={errors.invoicePrefix?.message}
-              {...register('invoicePrefix')}
+              {...register("invoicePrefix")}
             />
           </div>
 
@@ -168,7 +182,7 @@ export default function SettingsPage() {
               type="checkbox"
               id="autoNumbering"
               className="h-4 w-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500 dark:border-neutral-600 dark:bg-neutral-800"
-              {...register('autoNumbering')}
+              {...register("autoNumbering")}
             />
             <label
               htmlFor="autoNumbering"
@@ -202,25 +216,23 @@ export default function SettingsPage() {
                 Status
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                {isConnected
-                  ? `Connected: ${address}`
-                  : 'Not connected'}
+                {isConnected ? `Connected: ${address}` : "Not connected"}
               </p>
             </div>
             <span
-              className={`h-3 w-3 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-gray-300 dark:bg-gray-600'}`}
+              className={`h-3 w-3 rounded-full ${isConnected ? "bg-emerald-400" : "bg-gray-300 dark:bg-gray-600"}`}
             />
           </div>
 
           <Select
             label="Network"
             options={[
-              { value: 'testnet', label: 'Testnet' },
-              { value: 'mainnet', label: 'Mainnet' },
+              { value: "testnet", label: "Testnet" },
+              { value: "mainnet", label: "Mainnet" },
             ]}
             value={network}
             onChange={(e) =>
-              setNetwork(e.target.value as 'mainnet' | 'testnet')
+              setNetwork(e.target.value as "mainnet" | "testnet")
             }
           />
 
@@ -246,9 +258,7 @@ export default function SettingsPage() {
           size="sm"
           onClick={() => {
             if (
-              confirm(
-                'Are you sure? This will delete all your local data.',
-              )
+              confirm("Are you sure? This will delete all your local data.")
             ) {
               localStorage.clear();
               window.location.reload();
