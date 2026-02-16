@@ -1,8 +1,27 @@
 /**
  * Mempool.space API integration for payment detection
+ * Auto-detects testnet vs mainnet based on address format
  */
 
-const MEMPOOL_API = 'https://mempool.space/api';
+const MEMPOOL_MAINNET = "https://mempool.space/api";
+const MEMPOOL_TESTNET = "https://mempool.space/testnet/api";
+
+/**
+ * Detect if an address is a Bitcoin testnet address
+ * Testnet addresses start with: tb1 (bech32), m/n (P2PKH), 2 (P2SH)
+ */
+function isTestnetAddress(address: string): boolean {
+  return (
+    address.startsWith("tb1") ||
+    address.startsWith("m") ||
+    address.startsWith("n") ||
+    address.startsWith("2")
+  );
+}
+
+function getMempoolApi(address: string): string {
+  return isTestnetAddress(address) ? MEMPOOL_TESTNET : MEMPOOL_MAINNET;
+}
 
 export interface AddressInfo {
   address: string;
@@ -38,9 +57,11 @@ export interface Transaction {
 /**
  * Get address balance info from mempool.space
  */
-export async function getAddressInfo(address: string): Promise<AddressInfo | null> {
+export async function getAddressInfo(
+  address: string,
+): Promise<AddressInfo | null> {
   try {
-    const res = await fetch(`${MEMPOOL_API}/address/${address}`);
+    const res = await fetch(`${getMempoolApi(address)}/address/${address}`);
     if (!res.ok) return null;
     return await res.json();
   } catch {
@@ -51,9 +72,11 @@ export async function getAddressInfo(address: string): Promise<AddressInfo | nul
 /**
  * Get transactions for an address
  */
-export async function getAddressTransactions(address: string): Promise<Transaction[]> {
+export async function getAddressTransactions(
+  address: string,
+): Promise<Transaction[]> {
   try {
-    const res = await fetch(`${MEMPOOL_API}/address/${address}/txs`);
+    const res = await fetch(`${getMempoolApi(address)}/address/${address}/txs`);
     if (!res.ok) return [];
     return await res.json();
   } catch {
@@ -103,8 +126,10 @@ export async function getAddressBalance(address: string): Promise<{
   const info = await getAddressInfo(address);
   if (!info) return null;
 
-  const confirmed = info.chain_stats.funded_txo_sum - info.chain_stats.spent_txo_sum;
-  const unconfirmed = info.mempool_stats.funded_txo_sum - info.mempool_stats.spent_txo_sum;
+  const confirmed =
+    info.chain_stats.funded_txo_sum - info.chain_stats.spent_txo_sum;
+  const unconfirmed =
+    info.mempool_stats.funded_txo_sum - info.mempool_stats.spent_txo_sum;
 
   return {
     confirmed,
