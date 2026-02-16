@@ -128,6 +128,10 @@ export async function contractCancelEscrow(
 
 // ─── Contract Read Functions ─────────────────────────────────────────────────
 
+async function getReadNetwork() {
+  return NETWORK === "testnet" ? "testnet" : "mainnet";
+}
+
 export async function readEscrow(escrowId: number) {
   try {
     const { fetchCallReadOnlyFunction, cvToValue, uintCV } = await getTx();
@@ -137,6 +141,7 @@ export async function readEscrow(escrowId: number) {
       functionName: "get-escrow",
       functionArgs: [uintCV(escrowId)],
       senderAddress: CONTRACT_ADDRESS,
+      network: await getReadNetwork(),
     });
     return cvToValue(result);
   } catch {
@@ -153,12 +158,122 @@ export async function readEscrowCount(): Promise<number> {
       functionName: "get-escrow-count",
       functionArgs: [],
       senderAddress: CONTRACT_ADDRESS,
+      network: await getReadNetwork(),
     });
     const value = cvToValue(result);
     return typeof value === "bigint" ? Number(value) : Number(value) || 0;
   } catch {
     return 0;
   }
+}
+
+/**
+ * Helper to extract a primitive value from a cvToValue field.
+ * cvToValue in stacks v7 returns nested {type, value} objects for tuples.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function extractCV(field: any): string {
+  if (field === null || field === undefined) return "";
+  if (typeof field === "string") return field;
+  if (typeof field === "bigint") return field.toString();
+  if (typeof field === "number") return field.toString();
+  if (typeof field === "object" && "value" in field)
+    return extractCV(field.value);
+  return String(field);
+}
+
+/**
+ * Fetch all on-chain escrows where the given address is client or freelancer.
+ */
+export async function fetchOnChainEscrows(
+  walletAddress: string,
+): Promise<import("@/types").Escrow[]> {
+  const count = await readEscrowCount();
+  console.log(
+    "[fetchOnChainEscrows] escrow count:",
+    count,
+    "wallet:",
+    walletAddress,
+  );
+  if (count === 0) return [];
+
+  const results: import("@/types").Escrow[] = [];
+
+  for (let i = 0; i < count; i++) {
+    const raw = await readEscrow(i);
+    console.log(
+      `[fetchOnChainEscrows] escrow #${i} raw:`,
+      JSON.stringify(raw, (_, v) => (typeof v === "bigint" ? v.toString() : v)),
+    );
+    if (!raw) continue;
+
+    // cvToValue returns {type: "(tuple ...)", value: {field: {type, value}, ...}}
+    // The actual tuple fields are inside raw.value (if top-level has type/value wrapper)
+    const data =
+      raw.value &&
+      typeof raw.value === "object" &&
+      !Array.isArray(raw.value) &&
+      raw.type
+        ? raw.value // Wrapped: unwrap to get tuple fields
+        : raw; // Already unwrapped
+
+    const client = extractCV(data.client);
+    const freelancer = extractCV(data.freelancer);
+    const rawStatus = extractCV(data.status);
+    const rawAmount = data.amount;
+
+    console.log(
+      `[fetchOnChainEscrows] escrow #${i} parsed → client: ${client}, freelancer: ${freelancer}, status: ${rawStatus}`,
+    );
+
+    if (
+      client.toLowerCase() !== walletAddress.toLowerCase() &&
+      freelancer.toLowerCase() !== walletAddress.toLowerCase()
+    ) {
+      console.log(
+        `[fetchOnChainEscrows] escrow #${i} skipped — not our wallet`,
+      );
+      continue;
+    }
+
+    const validStatuses = [
+      "created",
+      "funded",
+      "delivered",
+      "completed",
+      "disputed",
+      "cancelled",
+    ];
+    const status = (
+      validStatuses.includes(rawStatus) ? rawStatus : "created"
+    ) as import("@/types").EscrowStatus;
+
+    // Amount: could be bigint, number, or {type: "uint", value: "10000000"}
+    let amount: number;
+    if (typeof rawAmount === "bigint") {
+      amount = Number(rawAmount);
+    } else if (typeof rawAmount === "number") {
+      amount = rawAmount;
+    } else {
+      amount = Number(extractCV(rawAmount) || 0);
+    }
+
+    results.push({
+      id: `chain-${i}`,
+      escrowId: i,
+      clientAddress: client,
+      freelancerAddress: freelancer,
+      amount: amount / 1_000_000,
+      amountUsd: amount / 1_000_000,
+      amountStx: amount,
+      status,
+      projectDescription: `Escrow #${i}`,
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  console.log("[fetchOnChainEscrows] returning", results.length, "escrows");
+  return results;
 }
 
 export async function readIsReviewExpired(escrowId: number): Promise<boolean> {
@@ -170,6 +285,7 @@ export async function readIsReviewExpired(escrowId: number): Promise<boolean> {
       functionName: "is-review-period-expired",
       functionArgs: [uintCV(escrowId)],
       senderAddress: CONTRACT_ADDRESS,
+      network: await getReadNetwork(),
     });
     return cvToValue(result) === true;
   } catch {

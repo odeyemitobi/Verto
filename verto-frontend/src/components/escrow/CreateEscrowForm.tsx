@@ -15,12 +15,12 @@ import {
   contractCreateEscrow,
   stxToMicrostacks,
   getExplorerTxUrl,
+  readEscrowCount,
 } from "@/lib/stacks";
-import { usdToBtc, fetchBtcPrice } from "@/lib/price";
 import type { Escrow } from "@/types";
 
 const escrowSchema = z.object({
-  clientAddress: z.string().min(1, "Client address is required"),
+  freelancerAddress: z.string().min(1, "Freelancer address is required"),
   amount: z.number().min(0.01, "Amount must be greater than 0"),
   projectDescription: z.string().min(1, "Description is required"),
 });
@@ -32,7 +32,7 @@ interface CreateEscrowFormProps {
 }
 
 export default function CreateEscrowForm({ onSuccess }: CreateEscrowFormProps) {
-  const { addEscrow, escrows } = useEscrowStore();
+  const { addEscrow } = useEscrowStore();
   const { address } = useWalletStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -48,24 +48,27 @@ export default function CreateEscrowForm({ onSuccess }: CreateEscrowFormProps) {
   const onSubmit = async (data: EscrowFormData) => {
     setIsSubmitting(true);
     try {
-      // Convert USD to microstacks (using STX for the contract)
+      // Convert STX to microstacks for the contract
       const amountMicrostacks = stxToMicrostacks(data.amount);
 
+      // Get the current on-chain count BEFORE creating (this will be the new escrow's ID)
+      const currentCount = await readEscrowCount();
+
       // Call the smart contract
+      // Contract: create-escrow(freelancer, amount, invoice-hash)
+      // contract-caller = client (the person creating/paying)
+      // freelancer = the person doing the work
       const txId = await contractCreateEscrow(
-        data.clientAddress,
+        data.freelancerAddress,
         amountMicrostacks,
       );
 
       if (txId) {
-        // Get BTC equivalent for display
-        const btcEquiv = await usdToBtc(data.amount);
-
         const escrow: Escrow = {
           id: generateId(),
-          escrowId: escrows.length,
-          clientAddress: data.clientAddress,
-          freelancerAddress: address || "",
+          escrowId: currentCount, // The on-chain escrow ID
+          clientAddress: address || "", // Caller = client
+          freelancerAddress: data.freelancerAddress, // Entered = freelancer
           amount: data.amount,
           amountUsd: data.amount,
           amountStx: amountMicrostacks,
@@ -99,10 +102,11 @@ export default function CreateEscrowForm({ onSuccess }: CreateEscrowFormProps) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <Input
-        label="Client Wallet Address"
-        placeholder="SP... or ST..."
-        error={errors.clientAddress?.message}
-        {...register("clientAddress")}
+        label="Freelancer Wallet Address"
+        placeholder="ST... (the person doing the work)"
+        hint="You (the caller) are the client who will fund the escrow."
+        error={errors.freelancerAddress?.message}
+        {...register("freelancerAddress")}
       />
       <Input
         label="Amount (STX)"
