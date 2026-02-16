@@ -1,24 +1,95 @@
-'use client';
+"use client";
 
-import { use, useState, useEffect, useRef } from 'react';
-import QRCode from 'qrcode';
-import { RiFileCopyLine, RiBitCoinLine, RiTimeLine } from 'react-icons/ri';
-import { toast } from 'sonner';
-import Card from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
-import Button from '@/components/ui/Button';
-import { formatCurrency, formatDate, formatBtc } from '@/lib/utils';
-import { formatBtcAmount } from '@/lib/price';
-import { useInvoiceStore } from '@/stores/useInvoiceStore';
+import { use, useState, useEffect, useRef, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import QRCode from "qrcode";
+import { RiFileCopyLine, RiBitCoinLine, RiTimeLine } from "react-icons/ri";
+import { toast } from "sonner";
+import Card from "@/components/ui/Card";
+import Badge from "@/components/ui/Badge";
+import Button from "@/components/ui/Button";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatBtcAmount } from "@/lib/price";
+import { useInvoiceStore } from "@/stores/useInvoiceStore";
+import {
+  decodeInvoiceFromShare,
+  type DecodedInvoice,
+} from "@/lib/shareableInvoice";
 
-export default function PublicPaymentPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+// ─── Inner component that uses useSearchParams (needs Suspense) ──────────────
+
+function PaymentPageInner({ id }: { id: string }) {
+  const searchParams = useSearchParams();
   const { getInvoice } = useInvoiceStore();
-  const invoice = getInvoice(id);
+  const qrCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [copied, setCopied] = useState(false);
+
+  // Try URL-encoded data first, fall back to localStorage
+  const encodedData = searchParams.get("d");
+  const sharedInvoice: DecodedInvoice | null = encodedData
+    ? decodeInvoiceFromShare(encodedData)
+    : null;
+  const localInvoice = getInvoice(id);
+
+  // Merge: shared data takes priority; local data is fallback
+  const invoice = sharedInvoice
+    ? {
+        invoiceNumber: sharedInvoice.invoiceNumber,
+        description: sharedInvoice.description,
+        amountUsd: sharedInvoice.amountUsd,
+        amountBtc: sharedInvoice.amountBtc,
+        paymentAddress: sharedInvoice.paymentAddress,
+        dueDate: sharedInvoice.dueDate,
+        status: sharedInvoice.status as
+          | "draft"
+          | "pending"
+          | "paid"
+          | "overdue"
+          | "cancelled",
+        items: sharedInvoice.items,
+        paidAt: undefined as string | undefined,
+      }
+    : localInvoice
+      ? {
+          invoiceNumber: localInvoice.invoiceNumber,
+          description: localInvoice.description,
+          amountUsd: localInvoice.amountUsd,
+          amountBtc: localInvoice.amountBtc,
+          paymentAddress: localInvoice.paymentAddress,
+          dueDate: localInvoice.dueDate,
+          status: localInvoice.status,
+          items: localInvoice.items,
+          paidAt: localInvoice.paidAt,
+        }
+      : null;
+
+  // Generate QR code
+  useEffect(() => {
+    if (
+      qrCanvasRef.current &&
+      invoice?.paymentAddress &&
+      invoice.status !== "paid"
+    ) {
+      const btcUri =
+        invoice.amountBtc > 0
+          ? `bitcoin:${invoice.paymentAddress}?amount=${invoice.amountBtc}`
+          : `bitcoin:${invoice.paymentAddress}`;
+
+      QRCode.toCanvas(qrCanvasRef.current, btcUri, {
+        width: 200,
+        margin: 2,
+        color: { dark: "#1f2937", light: "#ffffff" },
+      });
+    }
+  }, [invoice?.paymentAddress, invoice?.amountBtc, invoice?.status]);
+
+  const handleCopyAddress = () => {
+    if (!invoice) return;
+    navigator.clipboard.writeText(invoice.paymentAddress);
+    setCopied(true);
+    toast.success("Payment address copied!");
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   if (!invoice) {
     return (
@@ -28,36 +99,14 @@ export default function PublicPaymentPage({
             Invoice Not Found
           </h1>
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            This invoice link may be invalid or has been removed.
+            This invoice link may be invalid or has expired.
           </p>
         </Card>
       </div>
     );
   }
 
-  const qrCanvasRef = useRef<HTMLCanvasElement>(null);
-
-  // Generate QR code when component mounts or address changes
-  useEffect(() => {
-    if (qrCanvasRef.current && invoice?.paymentAddress && invoice.status !== 'paid') {
-      const btcUri = invoice.amountBtc > 0
-        ? `bitcoin:${invoice.paymentAddress}?amount=${invoice.amountBtc}`
-        : `bitcoin:${invoice.paymentAddress}`;
-
-      QRCode.toCanvas(qrCanvasRef.current, btcUri, {
-        width: 200,
-        margin: 2,
-        color: { dark: '#1f2937', light: '#ffffff' },
-      });
-    }
-  }, [invoice?.paymentAddress, invoice?.amountBtc, invoice?.status]);
-
-  const handleCopyAddress = () => {
-    navigator.clipboard.writeText(invoice.paymentAddress);
-    toast.success('Payment address copied!');
-  };
-
-  const isPaid = invoice.status === 'paid';
+  const isPaid = invoice.status === "paid";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4 dark:bg-black">
@@ -79,12 +128,16 @@ export default function PublicPaymentPage({
         <Card>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500 dark:text-gray-400">Status</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                Status
+              </span>
               <Badge status={invoice.status} />
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500 dark:text-gray-400">Amount</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                Amount
+              </span>
               <div className="text-right">
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {formatCurrency(invoice.amountUsd)}
@@ -98,14 +151,18 @@ export default function PublicPaymentPage({
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500 dark:text-gray-400">Description</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                Description
+              </span>
               <p className="text-sm text-right text-gray-900 dark:text-white max-w-[60%]">
                 {invoice.description}
               </p>
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500 dark:text-gray-400">Due Date</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                Due Date
+              </span>
               <div className="flex items-center gap-1.5 text-sm text-gray-900 dark:text-white">
                 <RiTimeLine className="h-3.5 w-3.5 text-gray-400" />
                 {formatDate(invoice.dueDate)}
@@ -120,7 +177,10 @@ export default function PublicPaymentPage({
                 </h3>
                 <div className="space-y-2">
                   {invoice.items.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between text-sm">
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between text-sm"
+                    >
                       <span className="text-gray-600 dark:text-gray-400">
                         {item.description} × {item.quantity}
                       </span>
@@ -163,11 +223,15 @@ export default function PublicPaymentPage({
                 icon={<RiFileCopyLine className="h-4 w-4" />}
                 onClick={handleCopyAddress}
               >
-                Copy
+                {copied ? "Copied!" : "Copy"}
               </Button>
             </div>
             <p className="mt-3 text-center text-xs text-gray-400 dark:text-gray-500">
-              Send exactly {invoice.amountBtc > 0 ? formatBtcAmount(invoice.amountBtc) + ' BTC' : formatCurrency(invoice.amountUsd)} to the address above
+              Send exactly{" "}
+              {invoice.amountBtc > 0
+                ? formatBtcAmount(invoice.amountBtc) + " BTC"
+                : formatCurrency(invoice.amountUsd)}{" "}
+              to the address above
             </p>
           </Card>
         )}
@@ -194,5 +258,27 @@ export default function PublicPaymentPage({
         </p>
       </div>
     </div>
+  );
+}
+
+// ─── Outer component with Suspense boundary ─────────────────────────────────
+
+export default function PublicPaymentPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
+
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-black">
+          <p className="text-sm text-gray-500">Loading invoice…</p>
+        </div>
+      }
+    >
+      <PaymentPageInner id={id} />
+    </Suspense>
   );
 }

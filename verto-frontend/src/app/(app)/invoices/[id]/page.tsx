@@ -28,6 +28,7 @@ import {
   getMempoolTxUrl,
 } from "@/lib/mempool";
 import InvoiceForm from "@/components/invoices/InvoiceForm";
+import { encodeInvoiceForShare } from "@/lib/shareableInvoice";
 import type { Invoice } from "@/types";
 
 export default function InvoiceDetailPage({
@@ -138,10 +139,11 @@ export default function InvoiceDetailPage({
   };
 
   const handleShareLink = () => {
-    const url = `${window.location.origin}/pay/${invoice.id}`;
+    const encoded = encodeInvoiceForShare(invoice);
+    const url = `${window.location.origin}/pay/${encodeURIComponent(invoice.invoiceNumber)}?d=${encoded}`;
     navigator.clipboard.writeText(url);
     toast.success("Payment link copied to clipboard", {
-      description: url,
+      description: "Anyone with this link can view and pay the invoice.",
     });
   };
 
