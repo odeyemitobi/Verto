@@ -9,20 +9,22 @@
 // ─── Contract Config ─────────────────────────────────────────────────────────
 
 const CONTRACT_ADDRESS =
-  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM';
-const CONTRACT_NAME =
-  process.env.NEXT_PUBLIC_CONTRACT_NAME || 'escrow-logic';
+  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ||
+  "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM";
+const CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME || "escrow-logic";
 
-const NETWORK = (process.env.NEXT_PUBLIC_STACKS_NETWORK as 'testnet' | 'mainnet') || 'testnet';
+const NETWORK =
+  (process.env.NEXT_PUBLIC_STACKS_NETWORK as "testnet" | "mainnet") ||
+  "testnet";
 
 // ─── Lazy module loaders ─────────────────────────────────────────────────────
 
 async function getConnect() {
-  return await import('@stacks/connect');
+  return await import("@stacks/connect");
 }
 
 async function getTx() {
-  return await import('@stacks/transactions');
+  return await import("@stacks/transactions");
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -42,6 +44,9 @@ async function callContract(
   functionArgs: unknown[],
 ): Promise<string | null> {
   const { openContractCall } = await getConnect();
+  const { STACKS_TESTNET, STACKS_MAINNET } = await import("@stacks/network");
+
+  const network = NETWORK === "testnet" ? STACKS_TESTNET : STACKS_MAINNET;
 
   return new Promise((resolve, reject) => {
     try {
@@ -50,9 +55,10 @@ async function callContract(
         contractName: CONTRACT_NAME,
         functionName,
         functionArgs,
+        network,
         onFinish: (data: { txId: string }) => resolve(data.txId),
         onCancel: () => resolve(null),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
     } catch (e) {
       reject(e);
@@ -72,42 +78,52 @@ export async function contractCreateEscrow(
   const functionArgs = [
     principalCV(freelancerAddress),
     uintCV(amountMicrostacks),
-    invoiceHash
-      ? someCV(bufferCV(Buffer.from(invoiceHash, 'hex')))
-      : noneCV(),
+    invoiceHash ? someCV(bufferCV(Buffer.from(invoiceHash, "hex"))) : noneCV(),
   ];
 
-  return callContract('create-escrow', functionArgs);
+  return callContract("create-escrow", functionArgs);
 }
 
-export async function contractFundEscrow(escrowId: number): Promise<string | null> {
+export async function contractFundEscrow(
+  escrowId: number,
+): Promise<string | null> {
   const { uintCV } = await getTx();
-  return callContract('fund-escrow', [uintCV(escrowId)]);
+  return callContract("fund-escrow", [uintCV(escrowId)]);
 }
 
-export async function contractMarkDelivered(escrowId: number): Promise<string | null> {
+export async function contractMarkDelivered(
+  escrowId: number,
+): Promise<string | null> {
   const { uintCV } = await getTx();
-  return callContract('mark-delivered', [uintCV(escrowId)]);
+  return callContract("mark-delivered", [uintCV(escrowId)]);
 }
 
-export async function contractReleasePayment(escrowId: number): Promise<string | null> {
+export async function contractReleasePayment(
+  escrowId: number,
+): Promise<string | null> {
   const { uintCV } = await getTx();
-  return callContract('release-payment', [uintCV(escrowId)]);
+  return callContract("release-payment", [uintCV(escrowId)]);
 }
 
-export async function contractRequestRevision(escrowId: number): Promise<string | null> {
+export async function contractRequestRevision(
+  escrowId: number,
+): Promise<string | null> {
   const { uintCV } = await getTx();
-  return callContract('request-revision', [uintCV(escrowId)]);
+  return callContract("request-revision", [uintCV(escrowId)]);
 }
 
-export async function contractInitiateDispute(escrowId: number): Promise<string | null> {
+export async function contractInitiateDispute(
+  escrowId: number,
+): Promise<string | null> {
   const { uintCV } = await getTx();
-  return callContract('initiate-dispute', [uintCV(escrowId)]);
+  return callContract("initiate-dispute", [uintCV(escrowId)]);
 }
 
-export async function contractCancelEscrow(escrowId: number): Promise<string | null> {
+export async function contractCancelEscrow(
+  escrowId: number,
+): Promise<string | null> {
   const { uintCV } = await getTx();
-  return callContract('cancel-escrow', [uintCV(escrowId)]);
+  return callContract("cancel-escrow", [uintCV(escrowId)]);
 }
 
 // ─── Contract Read Functions ─────────────────────────────────────────────────
@@ -118,7 +134,7 @@ export async function readEscrow(escrowId: number) {
     const result = await fetchCallReadOnlyFunction({
       contractAddress: CONTRACT_ADDRESS,
       contractName: CONTRACT_NAME,
-      functionName: 'get-escrow',
+      functionName: "get-escrow",
       functionArgs: [uintCV(escrowId)],
       senderAddress: CONTRACT_ADDRESS,
     });
@@ -134,12 +150,12 @@ export async function readEscrowCount(): Promise<number> {
     const result = await fetchCallReadOnlyFunction({
       contractAddress: CONTRACT_ADDRESS,
       contractName: CONTRACT_NAME,
-      functionName: 'get-escrow-count',
+      functionName: "get-escrow-count",
       functionArgs: [],
       senderAddress: CONTRACT_ADDRESS,
     });
     const value = cvToValue(result);
-    return typeof value === 'bigint' ? Number(value) : Number(value) || 0;
+    return typeof value === "bigint" ? Number(value) : Number(value) || 0;
   } catch {
     return 0;
   }
@@ -151,7 +167,7 @@ export async function readIsReviewExpired(escrowId: number): Promise<boolean> {
     const result = await fetchCallReadOnlyFunction({
       contractAddress: CONTRACT_ADDRESS,
       contractName: CONTRACT_NAME,
-      functionName: 'is-review-period-expired',
+      functionName: "is-review-period-expired",
       functionArgs: [uintCV(escrowId)],
       senderAddress: CONTRACT_ADDRESS,
     });
@@ -164,7 +180,7 @@ export async function readIsReviewExpired(escrowId: number): Promise<boolean> {
 // ─── Explorer Links ──────────────────────────────────────────────────────────
 
 export function getExplorerTxUrl(txId: string): string {
-  const base = 'https://explorer.stacks.co';
+  const base = "https://explorer.stacks.co";
   return `${base}/txid/${txId}?chain=${NETWORK}`;
 }
 
