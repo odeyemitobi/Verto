@@ -27,7 +27,7 @@ export default function NewInvoicePage() {
       {/* Back link */}
       <Link
         href="/invoices"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+        className="inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
       >
         <RiArrowLeftLine className="h-4 w-4" />
         Back to Invoices
