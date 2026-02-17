@@ -86,9 +86,36 @@ export async function contractCreateEscrow(
 
 export async function contractFundEscrow(
   escrowId: number,
+  senderAddress: string,
+  amountMicrostacks: number,
 ): Promise<string | null> {
-  const { uintCV } = await getTx();
-  return callContract("fund-escrow", [uintCV(escrowId)]);
+  const { uintCV, Pc } = await getTx();
+  const { openContractCall } = await getConnect();
+  const { STACKS_TESTNET, STACKS_MAINNET } = await import("@stacks/network");
+  const network = NETWORK === "testnet" ? STACKS_TESTNET : STACKS_MAINNET;
+
+  // Post-condition: the sender WILL send exactly amountMicrostacks in STX
+  const postConditions = [
+    Pc.principal(senderAddress).willSendEq(amountMicrostacks).ustx(),
+  ];
+
+  return new Promise((resolve, reject) => {
+    try {
+      openContractCall({
+        contractAddress: CONTRACT_ADDRESS,
+        contractName: CONTRACT_NAME,
+        functionName: "fund-escrow",
+        functionArgs: [uintCV(escrowId)],
+        postConditions,
+        network,
+        onFinish: (data: { txId: string }) => resolve(data.txId),
+        onCancel: () => resolve(null),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+    } catch (e) {
+      reject(e);
+    }
+  });
 }
 
 export async function contractMarkDelivered(

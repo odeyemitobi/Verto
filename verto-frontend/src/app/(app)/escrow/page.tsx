@@ -108,7 +108,11 @@ export default function EscrowPage() {
 
       switch (action) {
         case "fund":
-          txId = await contractFundEscrow(escrow.escrowId);
+          txId = await contractFundEscrow(
+            escrow.escrowId,
+            address!,
+            escrow.amountStx || 0,
+          );
           if (txId) {
             updateEscrow(escrow.id, {
               status: "funded",

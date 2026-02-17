@@ -57,7 +57,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
         {/* Right side actions */}
         <div className="flex items-center gap-1.5">
           {/* Notifications placeholder */}
-          <button className="relative hidden sm:flex h-9 w-9 items-center justify-center rounded-xl text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-neutral-800 dark:hover:text-gray-300" aria-label="Notifications">
+          <button className="relative cursor-pointer hidden sm:flex h-9 w-9 items-center justify-center rounded-xl text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-neutral-800 dark:hover:text-gray-300" aria-label="Notifications">
             <RiNotification3Line className="h-4.5 w-4.5" />
             <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-orange-500" />
           </button>
