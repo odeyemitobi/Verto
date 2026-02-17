@@ -1,6 +1,7 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import type { Escrow } from '@/types';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import type { Escrow } from "@/types";
+import { createWalletStorage, registerRehydrate } from "./walletStorage";
 
 interface EscrowStore {
   escrows: Escrow[];
@@ -32,6 +33,11 @@ export const useEscrowStore = create<EscrowStore>()(
 
       getEscrow: (id) => get().escrows.find((e) => e.id === id),
     }),
-    { name: 'verto-escrows' },
+    {
+      name: "verto-escrows",
+      storage: createWalletStorage(),
+    },
   ),
 );
+
+registerRehydrate(() => useEscrowStore.persist.rehydrate());

@@ -1,6 +1,7 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import type { UserSettings } from '@/types';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import type { UserSettings } from "@/types";
+import { createWalletStorage, registerRehydrate } from "./walletStorage";
 
 interface SettingsStore {
   settings: UserSettings;
@@ -11,11 +12,11 @@ export const useSettingsStore = create<SettingsStore>()(
   persist(
     (set) => ({
       settings: {
-        businessName: '',
-        email: '',
-        defaultPaymentAddress: '',
-        currency: 'USD',
-        invoicePrefix: 'INV',
+        businessName: "",
+        email: "",
+        defaultPaymentAddress: "",
+        currency: "USD",
+        invoicePrefix: "INV",
         autoNumbering: true,
       },
       updateSettings: (updates) =>
@@ -23,6 +24,11 @@ export const useSettingsStore = create<SettingsStore>()(
           settings: { ...state.settings, ...updates },
         })),
     }),
-    { name: 'verto-settings' },
+    {
+      name: "verto-settings",
+      storage: createWalletStorage(),
+    },
   ),
 );
+
+registerRehydrate(() => useSettingsStore.persist.rehydrate());

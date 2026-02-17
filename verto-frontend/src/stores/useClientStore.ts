@@ -1,6 +1,7 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import type { Client } from '@/types';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import type { Client } from "@/types";
+import { createWalletStorage, registerRehydrate } from "./walletStorage";
 
 interface ClientStore {
   clients: Client[];
@@ -32,6 +33,12 @@ export const useClientStore = create<ClientStore>()(
 
       getClient: (id) => get().clients.find((c) => c.id === id),
     }),
-    { name: 'verto-clients' },
+    {
+      name: "verto-clients",
+      storage: createWalletStorage(),
+    },
   ),
 );
+
+// Register for rehydration on wallet swap
+registerRehydrate(() => useClientStore.persist.rehydrate());

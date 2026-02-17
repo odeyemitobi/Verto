@@ -1,6 +1,7 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import type { Invoice } from '@/types';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import type { Invoice } from "@/types";
+import { createWalletStorage, registerRehydrate } from "./walletStorage";
 
 interface InvoiceStore {
   invoices: Invoice[];
@@ -32,6 +33,11 @@ export const useInvoiceStore = create<InvoiceStore>()(
 
       getInvoice: (id) => get().invoices.find((inv) => inv.id === id),
     }),
-    { name: 'verto-invoices' },
+    {
+      name: "verto-invoices",
+      storage: createWalletStorage(),
+    },
   ),
 );
+
+registerRehydrate(() => useInvoiceStore.persist.rehydrate());
