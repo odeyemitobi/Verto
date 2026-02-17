@@ -19,8 +19,8 @@ export const metadata: Metadata = {
   description:
     "Self-custody invoicing platform with trustless escrow contracts. Get paid in Bitcoin without fees or surveillance.",
   icons: {
-    icon: "/vertologo.png",
-    apple: "/vertologo.png",
+    icon: "/vertologo.svg",
+    apple: "/vertologo.svg",
   },
 };
 
