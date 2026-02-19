@@ -6,6 +6,7 @@ import Header from "@/components/layout/Header";
 import MobileNav from "@/components/layout/MobileNav";
 import AuthGuard from "@/components/auth/AuthGuard";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
+import MobileWalletModal from "@/components/auth/MobileWalletModal";
 import { usePaymentMonitor } from "@/hooks/usePaymentMonitor";
 import { useOverdueDetector } from "@/hooks/useOverdueDetector";
 import { useEscrowSync } from "@/hooks/useEscrowSync";
@@ -26,6 +27,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <BackgroundTasks>
           <div className="min-h-screen bg-gray-50/50 dark:bg-black">
             <Sidebar />
+            <MobileWalletModal />
             <MobileNav
               isOpen={isMobileNavOpen}
               onClose={() => setIsMobileNavOpen(false)}

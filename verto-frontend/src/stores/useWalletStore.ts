@@ -21,10 +21,12 @@ interface WalletStore {
   isConnecting: boolean;
   network: "mainnet" | "testnet";
   hydrated: boolean;
+  showMobileWalletModal: boolean;
   connect: () => Promise<void>;
   disconnect: () => void;
   setNetwork: (network: "mainnet" | "testnet") => void;
   hydrate: () => void;
+  closeMobileWalletModal: () => void;
 }
 
 export const useWalletStore = create<WalletStore>((set, get) => ({
@@ -33,6 +35,7 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
   isConnecting: false,
   network: "testnet",
   hydrated: false,
+  showMobileWalletModal: false,
 
   hydrate: () => {
     if (get().hydrated) return;
@@ -76,6 +79,19 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
 
   connect: async () => {
     if (get().isConnecting) return;
+
+    // On mobile phones there is no browser extension — show the wallet
+    // download modal straight away. We use an inline check here (not the
+    // isMobile utility) so the detection cannot be affected by module caching.
+    // /Mobi/ matches all mobile browsers; /Android/ catches Android tablets.
+    if (
+      typeof window !== "undefined" &&
+      /Mobi|Android/i.test(navigator.userAgent)
+    ) {
+      set({ showMobileWalletModal: true });
+      return;
+    }
+
     set({ isConnecting: true });
     try {
       const { connect: stacksConnect, getLocalStorage } =
@@ -125,4 +141,5 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
   },
 
   setNetwork: (network) => set({ network }),
+  closeMobileWalletModal: () => set({ showMobileWalletModal: false }),
 }));
