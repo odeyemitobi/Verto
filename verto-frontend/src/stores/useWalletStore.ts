@@ -80,11 +80,17 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
   connect: async () => {
     if (get().isConnecting) return;
 
-    // On mobile phones there is no browser extension — show the wallet
-    // download modal straight away. We use an inline check here (not the
-    // isMobile utility) so the detection cannot be affected by module caching.
-    // /Mobi/ matches all mobile browsers; /Android/ catches Android tablets.
+    // If a wallet extension/provider is injected (desktop extension OR wallet
+    // in-app browser like Xverse/Leather), proceed with the native flow.
+    // Only show the mobile download modal when on a mobile browser WITHOUT
+    // a provider available.
+    const hasProvider =
+      typeof window !== "undefined" &&
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      !!((window as any).StacksProvider || (window as any).LeatherProvider);
+
     if (
+      !hasProvider &&
       typeof window !== "undefined" &&
       /Mobi|Android/i.test(navigator.userAgent)
     ) {
