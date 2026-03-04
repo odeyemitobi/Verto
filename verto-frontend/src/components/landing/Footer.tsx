@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { RiTwitterXLine, RiGithubLine, RiDiscordLine } from 'react-icons/ri';
+import { RiTwitterXLine, RiGithubLine } from 'react-icons/ri';
 
 export default function Footer() {
   return (
@@ -37,9 +37,8 @@ export default function Footer() {
           {/* Social */}
           <div className="flex items-center gap-3">
             {[
-              { icon: RiTwitterXLine, href: 'https://twitter.com/Odeyemitobi95', label: 'Twitter' },
+              { icon: RiTwitterXLine, href: 'https://x.com/verto2026', label: 'Twitter' },
               { icon: RiGithubLine, href: 'https://github.com/odeyemitobi/Verto', label: 'GitHub' },
-              { icon: RiDiscordLine, href: '', label: 'Discord' },
             ].map((social) => (
               <a
                 key={social.label}

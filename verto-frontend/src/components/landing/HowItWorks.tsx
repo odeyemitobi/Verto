@@ -1,39 +1,32 @@
-import {
-  RiFileAddLine,
-  RiShareLine,
-  RiBitCoinLine,
-} from 'react-icons/ri';
+import { RiFileAddLine, RiShareLine, RiBitCoinLine } from "react-icons/ri";
 
 const STEPS = [
   {
-    number: '01',
+    number: "01",
     icon: RiFileAddLine,
-    title: 'Create Invoice',
+    title: "Create Invoice",
     description:
-      'Fill in client details, add line items, set your Bitcoin payment address, and generate a professional PDF.',
+      "Fill in client details, add line items, set your Bitcoin payment address, and generate a professional PDF.",
   },
   {
-    number: '02',
+    number: "02",
     icon: RiShareLine,
-    title: 'Share & Escrow',
+    title: "Share & Escrow",
     description:
-      'Send the invoice to your client. For extra protection, set up a trustless escrow smart contract.',
+      "Send the invoice to your client. For extra protection, set up a trustless escrow smart contract.",
   },
   {
-    number: '03',
+    number: "03",
     icon: RiBitCoinLine,
-    title: 'Get Paid',
+    title: "Get Paid",
     description:
-      'Receive Bitcoin directly in your wallet. Track payments in real-time from your dashboard.',
+      "Receive Bitcoin directly in your wallet. Track payments in real-time from your dashboard.",
   },
 ];
 
 export default function HowItWorks() {
   return (
-    <section
-      id="how-it-works"
-      className="relative px-4 py-24 sm:py-32"
-    >
+    <section id="how-it-works" className="relative px-4 py-24 sm:py-32">
       <div className="mx-auto max-w-6xl">
         {/* Section header */}
         <div className="mb-16 text-center">
@@ -51,9 +44,6 @@ export default function HowItWorks() {
 
         {/* Steps */}
         <div className="relative grid gap-8 md:grid-cols-3 md:gap-12">
-          {/* Connecting line (desktop) */}
-          <div className="absolute left-0 right-0 top-16 hidden h-px bg-linear-to-r from-transparent via-gray-200 to-transparent md:block dark:via-neutral-700" />
-
           {STEPS.map((step) => (
             <div key={step.number} className="relative text-center">
               {/* Step icon */}

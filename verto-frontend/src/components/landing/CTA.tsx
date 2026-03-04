@@ -29,7 +29,7 @@ export default function CTA() {
             {isConnected ? (
               <Link
                 href="/dashboard"
-                className="inline-flex h-12 items-center gap-2 rounded-xl bg-white px-8 text-base font-semibold text-orange-600 transition-all hover:bg-orange-50"
+                className="inline-flex h-12 cursor-pointer items-center gap-2 rounded-xl bg-white px-8 text-base font-semibold text-orange-600 transition-all hover:bg-orange-50"
               >
                 Go to Dashboard
                 <RiArrowRightLine className="h-5 w-5" />
@@ -37,7 +37,7 @@ export default function CTA() {
             ) : (
               <button
                 onClick={connect}
-                className="inline-flex h-12 items-center gap-2 rounded-xl bg-white px-8 text-base font-semibold text-orange-600 transition-all hover:bg-orange-50"
+                className="inline-flex h-12 cursor-pointer items-center gap-2 rounded-xl bg-white px-8 text-base font-semibold text-orange-600 transition-all hover:bg-orange-50"
               >
                 <RiWallet3Line className="h-5 w-5" />
                 Get Started — It&apos;s Free

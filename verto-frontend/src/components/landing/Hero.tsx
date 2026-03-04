@@ -37,8 +37,7 @@ export default function Hero() {
         {/* Subheadline */}
         <p className="mx-auto mb-10 max-w-2xl text-lg text-gray-600 sm:text-xl dark:text-gray-400">
           Self-custody invoicing with trustless escrow contracts. Create
-          professional invoices, accept Bitcoin payments, and protect every deal
-          — all without intermediaries.
+          professional invoices, accept Bitcoin payments, and protect every deal all without intermediaries.
         </p>
 
         {/* CTAs */}
