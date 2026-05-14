@@ -69,7 +69,7 @@ export default function Sidebar() {
                   'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
                   isActive
                     ? 'bg-[#db7e1336] text-gray-800 dark:text-white border border-orange-500'
-                    : 'text-gray-800 hover:bg-[#db7e1336] hover:text-gray-900 dark:text-gray-400 dark:hover:bg-neutral-800/50 dark:hover:text-white',
+                    : 'text-gray-800 hover:bg-[#db7e1314] hover:text-gray-900 dark:text-gray-400 dark:hover:bg-neutral-800/50 dark:hover:text-white',
                 )}
               >
                 <div
